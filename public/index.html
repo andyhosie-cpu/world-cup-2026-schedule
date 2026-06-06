@@ -985,6 +985,60 @@ function shiftDate(dateStr, deltaDays) {
   return `${y}-${m}-${day}`;
 }
 
+// ============================================
+// Forgiving search: strip diacritics, apply the alias map, fall back to
+// Levenshtein for typos like "soctland" -> "scotland".
+// ============================================
+function stripDiacritics(s) {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+function searchNorm(s) {
+  if (!s) return "";
+  const lower = stripDiacritics(String(s).trim().toLowerCase()).replace(/\s*&\s*/g, " and ");
+  // If the query exactly matches an alias (e.g. "turkey"), use its canonical
+  // form so it lines up with team names.
+  return NAME_MAP[lower] ? stripDiacritics(NAME_MAP[lower]) : lower;
+}
+function levenshtein(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const dp = new Array(b.length + 1);
+  for (let j = 0; j <= b.length; j++) dp[j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    let prev = dp[0];
+    dp[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const tmp = dp[j];
+      dp[j] = a[i - 1] === b[j - 1]
+        ? prev
+        : Math.min(prev + 1, dp[j] + 1, dp[j - 1] + 1);
+      prev = tmp;
+    }
+  }
+  return dp[b.length];
+}
+// Returns true if needle is a substring of haystack, or a close-enough
+// fuzzy match (sliding window + whole-string distance) once the query is
+// at least 4 characters long.
+function fuzzyMatch(haystackNorm, needleNorm) {
+  if (!needleNorm) return true;
+  if (haystackNorm.includes(needleNorm)) return true;
+  if (needleNorm.length < 4) return false;
+  const tol = Math.floor(needleNorm.length / 4) + 1;
+  // Whole-string distance (good for "turkey" vs "turkiye", "soctland" vs "scotland")
+  if (Math.abs(haystackNorm.length - needleNorm.length) <= tol) {
+    if (levenshtein(haystackNorm, needleNorm) <= tol) return true;
+  }
+  // Sliding window distance (handles typos inside a longer name)
+  const len = needleNorm.length;
+  for (let i = 0; i <= haystackNorm.length - len; i++) {
+    const window = haystackNorm.substr(i, len);
+    if (levenshtein(window, needleNorm) <= tol) return true;
+  }
+  return false;
+}
+
 function lookupForMatch(table, match) {
   // Exact key, falling back to +/-1 day to absorb upstream date drift around
   // midnight ET (some books publish a fixture under the next-day calendar).
@@ -1106,22 +1160,24 @@ const state = {
 
 function applyFilters() {
   let out = MATCHES.slice();
-  const q = state.search.trim().toLowerCase();
+  const rawQ = state.search.trim();
+  const q = searchNorm(rawQ);
   if (q) {
     out = out.filter(m => {
       const baseMatch =
-        m.t1.toLowerCase().includes(q) ||
-        m.t2.toLowerCase().includes(q) ||
-        m.venue.toLowerCase().includes(q) ||
-        m.city.toLowerCase().includes(q) ||
-        (STAGE_LABEL[m.stage]||"").toLowerCase().includes(q);
+        fuzzyMatch(searchNorm(m.t1), q) ||
+        fuzzyMatch(searchNorm(m.t2), q) ||
+        fuzzyMatch(searchNorm(m.venue), q) ||
+        fuzzyMatch(searchNorm(m.city), q) ||
+        // Stage codes stay exact-match (3-letter codes are too short to fuzz)
+        (STAGE_LABEL[m.stage]||"").toLowerCase().includes(rawQ.toLowerCase());
       if (baseMatch) return true;
       // For knockout matches, also match against possible teams
       if (m.stage.length > 1) {
         const pt = possibleTeamsFor(m.num);
         if (pt) {
-          return pt.side1.some(t => t.toLowerCase().includes(q)) ||
-                 pt.side2.some(t => t.toLowerCase().includes(q));
+          return pt.side1.some(t => fuzzyMatch(searchNorm(t), q)) ||
+                 pt.side2.some(t => fuzzyMatch(searchNorm(t), q));
         }
       }
       return false;
