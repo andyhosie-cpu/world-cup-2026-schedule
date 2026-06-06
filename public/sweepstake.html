@@ -422,8 +422,8 @@
 const EMPLOYEES = Array.from({length: 47}, (_, i) => `Employee ${String(i + 1).padStart(2, '0')}`);
 
 const STORAGE_KEY = 'northell-sweepstake-v1';
-const DRAW_TICK_DRY = 600;   // ms per name in dry run
-const DRAW_TICK_LIVE = 1800; // ms per name in live draw (more drama)
+const DRAW_TICK_DRY = 3000;  // ms per name in dry run
+const DRAW_TICK_LIVE = 3000; // ms per name in live draw (same drama)
 
 let TEAMS = [];
 let drawState = {
