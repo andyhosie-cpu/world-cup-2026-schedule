@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIFA World Cup 2026 — Fixture &amp; Location Schedule</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #1a1a1a;
+    background: #fafafa;
+  }
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 20px 24px 60px;
+  }
+
+  /* Title block */
+  .title-block {
+    padding: 24px 0 20px;
+    border-bottom: 3px solid #FF4500;
+    margin-bottom: 24px;
+  }
+  .title-block h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #111;
+    margin: 0 0 4px;
+  }
+  .title-block .subtitle {
+    font-size: 14px;
+    color: #555;
+    margin: 0 0 10px;
+    font-weight: 400;
+  }
+  .title-block .meta {
+    font-size: 11px;
+    color: #888;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .title-block .meta strong { color: #555; font-weight: 600; }
+
+  /* Filter bar */
+  .filters {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr 0.6fr;
+    gap: 10px;
+    align-items: end;
+  }
+  @media (max-width: 900px) {
+    .filters { grid-template-columns: 1fr 1fr; }
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-group label {
+    font-size: 9px;
+    font-weight: 600;
+    color: #FF4500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .filter-group input, .filter-group select {
+    font-family: inherit;
+    font-size: 12px;
+    padding: 7px 10px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    background: #fff;
+    color: #1a1a1a;
+    height: 32px;
+    outline: none;
+  }
+  .filter-group input:focus, .filter-group select:focus {
+    border-color: #FF4500;
+    box-shadow: 0 0 0 2px rgba(255, 69, 0, 0.12);
+  }
+  .reset-btn {
+    height: 32px;
+    border: 1px solid #FF4500;
+    background: #fff;
+    color: #FF4500;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+  }
+  .reset-btn:hover { background: #FF4500; color: #fff; }
+
+  /* Summary bar */
+  .summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background: #FFF5F0;
+    border-left: 3px solid #FF4500;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 14px;
+    font-size: 12px;
+  }
+  .summary .count { font-weight: 600; color: #FF4500; }
+  .summary .extra { color: #555; font-size: 11px; }
+
+  /* Quick filter chips */
+  .stage-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .chip {
+    font-size: 11px;
+    padding: 5px 11px;
+    border-radius: 16px;
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    color: #555;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 500;
+    transition: all 0.12s;
+  }
+  .chip:hover { border-color: #FF4500; color: #FF4500; }
+  .chip.active {
+    background: #FF4500;
+    color: #fff;
+    border-color: #FF4500;
+  }
+
+  /* Table */
+  .table-wrap {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  thead th {
+    background: #FFE0D0;
+    font-weight: 600;
+    text-align: left;
+    padding: 9px 10px;
+    color: #333;
+    border-bottom: 1px solid #D9D9D9;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  thead th:hover { background: #FFD2BC; }
+  thead th .sort-ind { color: #FF4500; margin-left: 3px; }
+  tbody td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) td { background: #FAFAFA; }
+  tbody tr:hover td { background: #FFF5F0; }
+  tbody tr.no-results td {
+    text-align: center;
+    padding: 36px;
+    color: #888;
+    font-style: italic;
+  }
+  .match-num { color: #888; font-size: 11px; }
+  .teams { font-weight: 600; color: #111; }
+  .teams .vs { color: #888; font-weight: 400; margin: 0 5px; }
+  .venue { color: #1a1a1a; }
+  .city { font-size: 11px; color: #555; }
+  .country-flag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 8px;
+    margin-left: 5px;
+    font-weight: 500;
+  }
+  .flag-usa { background: #DBEAFE; color: #1D4ED8; }
+  .flag-mex { background: #D1FAE5; color: #065F46; }
+  .flag-can { background: #FEE2E2; color: #B91C1C; }
+  .time-uk { font-size: 11px; color: #555; }
+  .time-et { font-weight: 600; color: #111; }
+  .date-cell { white-space: nowrap; }
+  .date-weekday { font-size: 10px; color: #888; display: block; }
+
+  /* Stage badges */
+  .stage-badge {
+    display: inline-block;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .stage-A, .stage-B, .stage-C, .stage-D, .stage-E, .stage-F,
+  .stage-G, .stage-H, .stage-I, .stage-J, .stage-K, .stage-L {
+    background: #FFE0D0; color: #9A2F00;
+  }
+  .stage-R32 { background: #EDE9FE; color: #6D28D9; }
+  .stage-R16 { background: #DBEAFE; color: #1D4ED8; }
+  .stage-QF  { background: #FEF3C7; color: #92400E; }
+  .stage-SF  { background: #FECACA; color: #991B1B; }
+  .stage-3RD { background: #E0E7FF; color: #3730A3; }
+  .stage-FIN { background: #FF4500; color: #fff; }
+
+  /* Knockout expand */
+  tbody tr.knockout-row { cursor: pointer; }
+  tbody tr.knockout-row td:first-child::before {
+    content: '▸';
+    color: #FF4500;
+    margin-right: 4px;
+    display: inline-block;
+    transition: transform 0.15s;
+    font-size: 10px;
+  }
+  tbody tr.knockout-row.is-expanded td:first-child::before {
+    transform: rotate(90deg);
+  }
+  tbody tr.expanded-row td {
+    background: #FFF8F4 !important;
+    padding: 12px 16px 14px;
+    border-bottom: 2px solid #FFE0D0;
+  }
+  .expand-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 720px) { .expand-grid { grid-template-columns: 1fr; } }
+  .expand-side {
+    background: #fff;
+    border: 1px solid #FFE0D0;
+    border-radius: 4px;
+    padding: 8px 10px;
+  }
+  .expand-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #FF4500;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 6px;
+  }
+  .expand-count { color: #888; font-weight: 500; }
+  .expand-teams {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .team-chip {
+    font-size: 10px;
+    padding: 3px 8px;
+    background: #f5f5f5;
+    border-radius: 10px;
+    color: #333;
+    font-weight: 500;
+  }
+  .team-chip.from-group {
+    background: #FFE0D0;
+    color: #9A2F00;
+  }
+  .expand-note {
+    grid-column: 1 / -1;
+    font-size: 10px;
+    color: #888;
+    font-style: italic;
+    margin-top: 2px;
+  }
+
+  /* Expand-all toggle */
+  .toggle-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+  .toggle-btn {
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 5px 11px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    color: #555;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .toggle-btn:hover { border-color: #FF4500; color: #FF4500; }
+  .toggle-btn.active { background: #FF4500; color: #fff; border-color: #FF4500; }
+
+  .footer-note {
+    margin-top: 18px;
+    font-size: 10px;
+    color: #888;
+    text-align: center;
+    line-height: 1.6;
+  }
+  .footer-note a { color: #FF4500; text-decoration: none; }
+  .footer-note a:hover { text-decoration: underline; }
+
+  /* ============================================
+     Live data layer - scores, odds, outrights
+     ============================================ */
+
+  /* Score display in the match cell */
+  .score {
+    font-weight: 700;
+    color: #111;
+    background: #FFF5F0;
+    padding: 1px 7px;
+    border-radius: 4px;
+    margin: 0 4px;
+    font-size: 12px;
+    letter-spacing: -0.2px;
+  }
+
+  /* Status badges */
+  .status-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-left: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    vertical-align: 1px;
+  }
+  .status-FT { background: #e5e5e5; color: #555; }
+  .status-LIVE {
+    background: #FEE2E2;
+    color: #B91C1C;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    background: #DC2626;
+    border-radius: 50%;
+    animation: live-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes live-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.45; transform: scale(1.25); }
+  }
+
+  /* Odds chips */
+  .odds-row {
+    margin-top: 4px;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .odds-chip {
+    font-size: 10px;
+    padding: 2px 7px;
+    border: 1px solid #FFCFB4;
+    background: #FFFBF8;
+    color: #9A2F00;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+    cursor: default;
+  }
+  .odds-chip .odds-side {
+    color: #FF4500;
+    margin-right: 3px;
+  }
+  .odds-empty {
+    font-size: 10px;
+    color: #BBB;
+    font-style: italic;
+  }
+
+  /* Status strip near summary bar */
+  .status-strip {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 10px;
+    color: #888;
+    margin-bottom: 10px;
+    padding: 0 4px;
+  }
+  .status-strip .stat-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .status-strip .stat-tag::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #BBB;
+  }
+  .status-strip .stat-tag.fresh::before { background: #22c55e; }
+  .status-strip .stat-tag.stale::before { background: #f59e0b; }
+  .status-strip .stat-tag.error::before { background: #ef4444; }
+  .status-strip .quota { margin-left: auto; }
+
+  /* Outrights panel */
+  .outrights-panel {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .outrights-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    cursor: pointer;
+    user-select: none;
+    background: #FFF5F0;
+    border-bottom: 1px solid transparent;
+    transition: background 0.12s;
+  }
+  .outrights-head:hover { background: #FFE0D0; }
+  .outrights-panel.is-open .outrights-head {
+    border-bottom-color: #FFE0D0;
+  }
+  .outrights-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #FF4500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .outrights-title::before {
+    content: '▸';
+    color: #FF4500;
+    font-size: 10px;
+    transition: transform 0.15s;
+  }
+  .outrights-panel.is-open .outrights-title::before {
+    transform: rotate(90deg);
+  }
+  .outrights-meta {
+    font-size: 10px;
+    color: #888;
+  }
+  .outrights-body {
+    display: none;
+    padding: 12px 16px 14px;
+  }
+  .outrights-panel.is-open .outrights-body { display: block; }
+  .outrights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+  }
+  .outright-card {
+    background: #FAFAFA;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    padding: 8px 10px;
+  }
+  .outright-card .rank {
+    font-size: 9px;
+    color: #888;
+    font-weight: 600;
+  }
+  .outright-card .team {
+    font-size: 12px;
+    font-weight: 700;
+    color: #111;
+    margin: 1px 0 2px;
+  }
+  .outright-card .price {
+    font-size: 14px;
+    font-weight: 700;
+    color: #FF4500;
+  }
+  .outright-card .bm {
+    font-size: 10px;
+    color: #888;
+    margin-top: 1px;
+  }
+  .outrights-empty {
+    font-size: 11px;
+    color: #888;
+    font-style: italic;
+    padding: 4px 0;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="title-block">
+    <h1>FIFA World Cup 2026 — Fixture &amp; Location Schedule</h1>
+    <p class="subtitle">All 104 matches across the USA, Canada and Mexico — filter by team, venue, stage, or date</p>
+    <div class="meta">
+      <span><strong>Tournament:</strong> 11 June – 19 July 2026</span>
+      <span><strong>Teams:</strong> 48 • <strong>Venues:</strong> 16 cities</span>
+      <span><strong>Final:</strong> MetLife Stadium, New York/New Jersey</span>
+      <span><strong>Times:</strong> ET (with London BST equivalent)</span>
+    </div>
+  </div>
+
+  <div class="outrights-panel" id="outrightsPanel">
+    <div class="outrights-head" id="outrightsHead">
+      <span class="outrights-title">Tournament winner odds</span>
+      <span class="outrights-meta" id="outrightsMeta">Loading…</span>
+    </div>
+    <div class="outrights-body" id="outrightsBody"></div>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label for="search">Search (team, city, venue)</label>
+      <input id="search" type="text" placeholder="e.g. England, Miami, MetLife…" autocomplete="off">
+    </div>
+    <div class="filter-group">
+      <label for="teamFilter">Team</label>
+      <select id="teamFilter"><option value="">All teams</option></select>
+    </div>
+    <div class="filter-group">
+      <label for="venueFilter">Venue / City</label>
+      <select id="venueFilter"><option value="">All venues</option></select>
+    </div>
+    <div class="filter-group">
+      <label for="stageFilter">Stage</label>
+      <select id="stageFilter">
+        <option value="">All stages</option>
+        <option value="GROUP">Group stage (all)</option>
+        <option value="A">Group A</option>
+        <option value="B">Group B</option>
+        <option value="C">Group C</option>
+        <option value="D">Group D</option>
+        <option value="E">Group E</option>
+        <option value="F">Group F</option>
+        <option value="G">Group G</option>
+        <option value="H">Group H</option>
+        <option value="I">Group I</option>
+        <option value="J">Group J</option>
+        <option value="K">Group K</option>
+        <option value="L">Group L</option>
+        <option value="R32">Round of 32</option>
+        <option value="R16">Round of 16</option>
+        <option value="QF">Quarter-finals</option>
+        <option value="SF">Semi-finals</option>
+        <option value="3RD">3rd-place play-off</option>
+        <option value="FIN">Final</option>
+      </select>
+    </div>
+    <button class="reset-btn" id="resetBtn">Reset</button>
+  </div>
+
+  <div class="stage-chips" id="stageChips">
+    <button class="chip active" data-stage="">All</button>
+    <button class="chip" data-stage="GROUP">Group stage</button>
+    <button class="chip" data-stage="R32">R32</button>
+    <button class="chip" data-stage="R16">R16</button>
+    <button class="chip" data-stage="QF">QF</button>
+    <button class="chip" data-stage="SF">SF</button>
+    <button class="chip" data-stage="3RD">3rd</button>
+    <button class="chip" data-stage="FIN">Final</button>
+  </div>
+
+  <div class="summary">
+    <span><span class="count" id="resultCount">0</span> matches shown</span>
+    <span class="extra" id="resultExtra"></span>
+  </div>
+
+  <div class="status-strip" id="statusStrip">
+    <span class="stat-tag" id="scoresStat">Scores: loading…</span>
+    <span class="stat-tag" id="oddsStat">Odds: loading…</span>
+    <span class="quota" id="quotaStat"></span>
+  </div>
+
+  <div class="toggle-row">
+    <button class="toggle-btn" id="expandAllBtn">Show possible teams for all knockouts</button>
+  </div>
+
+  <div class="table-wrap">
+    <table id="fixtureTable">
+      <thead>
+        <tr>
+          <th data-sort="num" style="width: 55px;">#</th>
+          <th data-sort="date" style="width: 105px;">Date</th>
+          <th data-sort="timeET" style="width: 95px;">Kick-off</th>
+          <th data-sort="stage" style="width: 95px;">Stage</th>
+          <th data-sort="match">Match</th>
+          <th data-sort="venue">Venue</th>
+          <th data-sort="city">City</th>
+        </tr>
+      </thead>
+      <tbody id="fixtureBody"></tbody>
+    </table>
+  </div>
+
+  <div class="footer-note">
+    Group A–L = group stage. Knockout matchups depend on group standings — click any knockout row (or use the toggle above) to see every team that could possibly play in that match. Highlighted chips show the team's source group.
+    <br>All kick-offs in US Eastern Time with London BST equivalent. Schedule confirmed by FIFA following the Final Draw on 5 December 2025 and play-off finals on 31 March 2026.
+  </div>
+
+</div>
+
+<script>
+// ============================================
+// FIXTURE DATA — all 104 matches
+// Each entry: [num, "YYYY-MM-DD", "HH:MM" (ET, 24h), stageCode, "Team1", "Team2", "Venue", "City", country]
+// stageCode: "A"–"L" for groups, "R32", "R16", "QF", "SF", "3RD", "FIN"
+// Knockout matches use placeholder team strings.
+// ============================================
+const RAW = [
+  // ---- Group A ----
+  [1, "2026-06-11", "15:00", "A", "Mexico", "South Africa", "Estadio Azteca", "Mexico City", "MEX"],
+  [4, "2026-06-11", "22:00", "A", "South Korea", "Czechia", "Estadio Akron", "Guadalajara", "MEX"],
+  [19, "2026-06-18", "12:00", "A", "Czechia", "South Africa", "Mercedes-Benz Stadium", "Atlanta", "USA"],
+  [25, "2026-06-18", "21:00", "A", "Mexico", "South Korea", "Estadio Akron", "Guadalajara", "MEX"],
+  [42, "2026-06-24", "21:00", "A", "Czechia", "Mexico", "Estadio Azteca", "Mexico City", "MEX"],
+  [43, "2026-06-24", "21:00", "A", "South Africa", "South Korea", "Estadio BBVA", "Monterrey", "MEX"],
+
+  // ---- Group B ----
+  [3, "2026-06-12", "15:00", "B", "Canada", "Bosnia and Herzegovina", "BMO Field", "Toronto", "CAN"],
+  [7, "2026-06-13", "15:00", "B", "Qatar", "Switzerland", "Levi's Stadium", "San Francisco Bay Area", "USA"],
+  [20, "2026-06-18", "15:00", "B", "Switzerland", "Bosnia and Herzegovina", "SoFi Stadium", "Los Angeles", "USA"],
+  [22, "2026-06-18", "18:00", "B", "Canada", "Qatar", "BC Place", "Vancouver", "CAN"],
+  [39, "2026-06-24", "15:00", "B", "Switzerland", "Canada", "BC Place", "Vancouver", "CAN"],
+  [40, "2026-06-24", "15:00", "B", "Bosnia and Herzegovina", "Qatar", "Lumen Field", "Seattle", "USA"],
+
+  // ---- Group C ----
+  [5, "2026-06-13", "18:00", "C", "Brazil", "Morocco", "MetLife Stadium", "New York / New Jersey", "USA"],
+  [8, "2026-06-13", "21:00", "C", "Haiti", "Scotland", "Gillette Stadium", "Boston", "USA"],
+  [27, "2026-06-19", "18:00", "C", "Scotland", "Morocco", "Gillette Stadium", "Boston", "USA"],
+  [29, "2026-06-19", "21:00", "C", "Brazil", "Haiti", "Lincoln Financial Field", "Philadelphia", "USA"],
+  [44, "2026-06-24", "18:00", "C", "Scotland", "Brazil", "Hard Rock Stadium", "Miami", "USA"],
+  [45, "2026-06-24", "18:00", "C", "Morocco", "Haiti", "Mercedes-Benz Stadium", "Atlanta", "USA"],
+
+  // ---- Group D ----
+  [2, "2026-06-12", "21:00", "D", "USA", "Paraguay", "SoFi Stadium", "Los Angeles", "USA"],
+  [6, "2026-06-13", "00:00", "D", "Australia", "Türkiye", "BC Place", "Vancouver", "CAN"],
+  [26, "2026-06-19", "15:00", "D", "USA", "Australia", "Lumen Field", "Seattle", "USA"],
+  [30, "2026-06-20", "00:00", "D", "Türkiye", "Paraguay", "Levi's Stadium", "San Francisco Bay Area", "USA"],
+  [54, "2026-06-25", "22:00", "D", "Türkiye", "USA", "SoFi Stadium", "Los Angeles", "USA"],
+  [55, "2026-06-25", "22:00", "D", "Paraguay", "Australia", "Levi's Stadium", "San Francisco Bay Area", "USA"],
+
+  // ---- Group E ----
+  [9, "2026-06-14", "13:00", "E", "Germany", "Curaçao", "NRG Stadium", "Houston", "USA"],
+  [11, "2026-06-14", "19:00", "E", "Ivory Coast", "Ecuador", "Lincoln Financial Field", "Philadelphia", "USA"],
+  [33, "2026-06-20", "16:00", "E", "Germany", "Ivory Coast", "BMO Field", "Toronto", "CAN"],
+  [35, "2026-06-20", "20:00", "E", "Ecuador", "Curaçao", "Arrowhead Stadium", "Kansas City", "USA"],
+  [52, "2026-06-25", "16:00", "E", "Ecuador", "Germany", "MetLife Stadium", "New York / New Jersey", "USA"],
+  [53, "2026-06-25", "16:00", "E", "Curaçao", "Ivory Coast", "Lincoln Financial Field", "Philadelphia", "USA"],
+
+  // ---- Group F ----
+  [10, "2026-06-14", "16:00", "F", "Netherlands", "Japan", "AT&T Stadium", "Dallas", "USA"],
+  [12, "2026-06-14", "22:00", "F", "Sweden", "Tunisia", "Estadio BBVA", "Monterrey", "MEX"],
+  [32, "2026-06-20", "13:00", "F", "Netherlands", "Sweden", "NRG Stadium", "Houston", "USA"],
+  [36, "2026-06-21", "00:00", "F", "Tunisia", "Japan", "Estadio BBVA", "Monterrey", "MEX"],
+  [50, "2026-06-25", "19:00", "F", "Japan", "Sweden", "AT&T Stadium", "Dallas", "USA"],
+  [51, "2026-06-25", "19:00", "F", "Tunisia", "Netherlands", "Arrowhead Stadium", "Kansas City", "USA"],
+
+  // ---- Group G ----
+  [14, "2026-06-15", "15:00", "G", "Belgium", "Egypt", "Lumen Field", "Seattle", "USA"],
+  [16, "2026-06-15", "21:00", "G", "Iran", "New Zealand", "SoFi Stadium", "Los Angeles", "USA"],
+  [37, "2026-06-21", "15:00", "G", "Belgium", "Iran", "SoFi Stadium", "Los Angeles", "USA"],
+  [38, "2026-06-21", "21:00", "G", "New Zealand", "Egypt", "BC Place", "Vancouver", "CAN"],
+  [58, "2026-06-26", "23:00", "G", "Egypt", "Iran", "Lumen Field", "Seattle", "USA"],
+  [59, "2026-06-26", "23:00", "G", "New Zealand", "Belgium", "BC Place", "Vancouver", "CAN"],
+
+  // ---- Group H ----
+  [13, "2026-06-15", "12:00", "H", "Spain", "Cape Verde", "Mercedes-Benz Stadium", "Atlanta", "USA"],
+  [15, "2026-06-15", "18:00", "H", "Saudi Arabia", "Uruguay", "Hard Rock Stadium", "Miami", "USA"],
+  [34, "2026-06-21", "12:00", "H", "Spain", "Saudi Arabia", "Mercedes-Benz Stadium", "Atlanta", "USA"],
+  [31, "2026-06-21", "18:00", "H", "Uruguay", "Cape Verde", "Hard Rock Stadium", "Miami", "USA"],
+  [56, "2026-06-26", "20:00", "H", "Cape Verde", "Saudi Arabia", "NRG Stadium", "Houston", "USA"],
+  [57, "2026-06-26", "20:00", "H", "Uruguay", "Spain", "Estadio Akron", "Guadalajara", "MEX"],
+
+  // ---- Group I ----
+  [17, "2026-06-16", "15:00", "I", "France", "Senegal", "MetLife Stadium", "New York / New Jersey", "USA"],
+  [18, "2026-06-16", "18:00", "I", "Iraq", "Norway", "Gillette Stadium", "Boston", "USA"],
+  [41, "2026-06-22", "17:00", "I", "France", "Iraq", "Lincoln Financial Field", "Philadelphia", "USA"],
+  [46, "2026-06-22", "20:00", "I", "Norway", "Senegal", "MetLife Stadium", "New York / New Jersey", "USA"],
+  [60, "2026-06-26", "15:00", "I", "Norway", "France", "Gillette Stadium", "Boston", "USA"],
+  [61, "2026-06-26", "15:00", "I", "Senegal", "Iraq", "BMO Field", "Toronto", "CAN"],
+
+  // ---- Group J ----
+  [21, "2026-06-16", "21:00", "J", "Argentina", "Algeria", "Arrowhead Stadium", "Kansas City", "USA"],
+  [23, "2026-06-17", "00:00", "J", "Austria", "Jordan", "Levi's Stadium", "San Francisco Bay Area", "USA"],
+  [47, "2026-06-22", "13:00", "J", "Argentina", "Austria", "AT&T Stadium", "Dallas", "USA"],
+  [48, "2026-06-22", "23:00", "J", "Jordan", "Algeria", "Levi's Stadium", "San Francisco Bay Area", "USA"],
+  [66, "2026-06-27", "22:00", "J", "Algeria", "Austria", "Arrowhead Stadium", "Kansas City", "USA"],
+  [67, "2026-06-27", "22:00", "J", "Jordan", "Argentina", "AT&T Stadium", "Dallas", "USA"],
+
+  // ---- Group K ----
+  [24, "2026-06-17", "13:00", "K", "Portugal", "DR Congo", "NRG Stadium", "Houston", "USA"],
+  [28, "2026-06-17", "22:00", "K", "Uzbekistan", "Colombia", "Estadio Azteca", "Mexico City", "MEX"],
+  [49, "2026-06-23", "13:00", "K", "Portugal", "Uzbekistan", "NRG Stadium", "Houston", "USA"],
+  [62, "2026-06-23", "22:00", "K", "Colombia", "DR Congo", "Estadio Akron", "Guadalajara", "MEX"],
+  [70, "2026-06-27", "19:30", "K", "Colombia", "Portugal", "Hard Rock Stadium", "Miami", "USA"],
+  [71, "2026-06-27", "19:30", "K", "DR Congo", "Uzbekistan", "Mercedes-Benz Stadium", "Atlanta", "USA"],
+
+  // ---- Group L ----
+  [63, "2026-06-17", "16:00", "L", "England", "Croatia", "AT&T Stadium", "Dallas", "USA"],
+  [64, "2026-06-17", "19:00", "L", "Ghana", "Panama", "BMO Field", "Toronto", "CAN"],
+  [65, "2026-06-23", "16:00", "L", "England", "Ghana", "Gillette Stadium", "Boston", "USA"],
+  [68, "2026-06-23", "19:00", "L", "Panama", "Croatia", "BMO Field", "Toronto", "CAN"],
+  [69, "2026-06-27", "17:00", "L", "Panama", "England", "MetLife Stadium", "New York / New Jersey", "USA"],
+  [72, "2026-06-27", "17:00", "L", "Croatia", "Ghana", "Lincoln Financial Field", "Philadelphia", "USA"],
+
+  // ---- Round of 32 ----
+  [73, "2026-06-28", "15:00", "R32", "Runner-up A", "Runner-up B", "SoFi Stadium", "Los Angeles", "USA"],
+  [76, "2026-06-29", "13:00", "R32", "Winner C", "Runner-up F", "NRG Stadium", "Houston", "USA"],
+  [74, "2026-06-29", "16:30", "R32", "Winner E", "3rd-place A/B/C/D/F", "Gillette Stadium", "Boston", "USA"],
+  [75, "2026-06-29", "21:00", "R32", "Winner F", "Runner-up C", "Estadio BBVA", "Monterrey", "MEX"],
+  [78, "2026-06-30", "13:00", "R32", "Runner-up E", "Runner-up I", "AT&T Stadium", "Dallas", "USA"],
+  [77, "2026-06-30", "17:00", "R32", "Winner I", "3rd-place C/D/F/G/H", "MetLife Stadium", "New York / New Jersey", "USA"],
+  [79, "2026-06-30", "21:00", "R32", "Winner A", "3rd-place C/E/F/H/I", "Estadio Azteca", "Mexico City", "MEX"],
+  [80, "2026-07-01", "12:00", "R32", "Winner L", "3rd-place E/H/I/J/K", "Mercedes-Benz Stadium", "Atlanta", "USA"],
+  [82, "2026-07-01", "16:00", "R32", "Winner G", "3rd-place A/E/H/I/J", "Lumen Field", "Seattle", "USA"],
+  [81, "2026-07-01", "20:00", "R32", "Winner D", "3rd-place B/E/F/I/J", "Levi's Stadium", "San Francisco Bay Area", "USA"],
+  [84, "2026-07-02", "15:00", "R32", "Winner H", "Runner-up J", "SoFi Stadium", "Los Angeles", "USA"],
+  [83, "2026-07-02", "19:00", "R32", "Runner-up K", "Runner-up L", "BMO Field", "Toronto", "CAN"],
+  [85, "2026-07-02", "23:00", "R32", "Winner B", "3rd-place E/F/G/I/J", "BC Place", "Vancouver", "CAN"],
+  [88, "2026-07-03", "14:00", "R32", "Runner-up D", "Runner-up G", "AT&T Stadium", "Dallas", "USA"],
+  [86, "2026-07-03", "18:00", "R32", "Winner J", "Runner-up H", "Hard Rock Stadium", "Miami", "USA"],
+  [87, "2026-07-03", "21:30", "R32", "Winner K", "3rd-place D/E/I/J/L", "Arrowhead Stadium", "Kansas City", "USA"],
+
+  // ---- Round of 16 ----
+  [90, "2026-07-04", "13:00", "R16", "Winner M73", "Winner M75", "NRG Stadium", "Houston", "USA"],
+  [89, "2026-07-04", "17:00", "R16", "Winner M74", "Winner M77", "Lincoln Financial Field", "Philadelphia", "USA"],
+  [91, "2026-07-05", "16:00", "R16", "Winner M76", "Winner M78", "MetLife Stadium", "New York / New Jersey", "USA"],
+  [92, "2026-07-05", "20:00", "R16", "Winner M79", "Winner M80", "Estadio Azteca", "Mexico City", "MEX"],
+  [93, "2026-07-06", "15:00", "R16", "Winner M83", "Winner M84", "AT&T Stadium", "Dallas", "USA"],
+  [94, "2026-07-06", "20:00", "R16", "Winner M81", "Winner M82", "Lumen Field", "Seattle", "USA"],
+  [95, "2026-07-07", "12:00", "R16", "Winner M86", "Winner M88", "Mercedes-Benz Stadium", "Atlanta", "USA"],
+  [96, "2026-07-07", "16:00", "R16", "Winner M85", "Winner M87", "BC Place", "Vancouver", "CAN"],
+
+  // ---- Quarter-finals ----
+  [97, "2026-07-09", "16:00", "QF", "Winner M89", "Winner M90", "Gillette Stadium", "Boston", "USA"],
+  [98, "2026-07-10", "16:00", "QF", "Winner M93", "Winner M94", "SoFi Stadium", "Los Angeles", "USA"],
+  [99, "2026-07-11", "17:00", "QF", "Winner M91", "Winner M92", "Hard Rock Stadium", "Miami", "USA"],
+  [100, "2026-07-11", "21:00", "QF", "Winner M95", "Winner M96", "Arrowhead Stadium", "Kansas City", "USA"],
+
+  // ---- Semi-finals ----
+  [101, "2026-07-14", "15:00", "SF", "Winner M97", "Winner M98", "AT&T Stadium", "Dallas", "USA"],
+  [102, "2026-07-15", "15:00", "SF", "Winner M99", "Winner M100", "Mercedes-Benz Stadium", "Atlanta", "USA"],
+
+  // ---- 3rd-place play-off ----
+  [103, "2026-07-18", "17:00", "3RD", "Loser M101", "Loser M102", "Hard Rock Stadium", "Miami", "USA"],
+
+  // ---- Final ----
+  [104, "2026-07-19", "15:00", "FIN", "Winner M101", "Winner M102", "MetLife Stadium", "New York / New Jersey", "USA"]
+];
+
+// ============================================
+// Helpers
+// ============================================
+const STAGE_LABEL = {
+  A:"Group A", B:"Group B", C:"Group C", D:"Group D", E:"Group E", F:"Group F",
+  G:"Group G", H:"Group H", I:"Group I", J:"Group J", K:"Group K", L:"Group L",
+  R32:"Round of 32", R16:"Round of 16", QF:"Quarter-final",
+  SF:"Semi-final", "3RD":"3rd place", FIN:"Final"
+};
+const COUNTRY_LABEL = { USA:"USA", MEX:"Mexico", CAN:"Canada" };
+const COUNTRY_CLASS = { USA:"flag-usa", MEX:"flag-mex", CAN:"flag-can" };
+const WEEKDAY = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+// ============================================
+// Group rosters and knockout-bracket feed map
+// Each match has two sides. Each side is either:
+//   {k:"g", l:[...group letters...]}  — any team from those groups
+//   {k:"m", r:[...match nums...]}     — possible teams = union from those feeding matches
+// ============================================
+const GROUPS = {
+  A: ["Mexico", "South Africa", "South Korea", "Czechia"],
+  B: ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"],
+  C: ["Brazil", "Morocco", "Scotland", "Haiti"],
+  D: ["USA", "Paraguay", "Australia", "Türkiye"],
+  E: ["Germany", "Curaçao", "Ivory Coast", "Ecuador"],
+  F: ["Netherlands", "Japan", "Sweden", "Tunisia"],
+  G: ["Belgium", "Egypt", "Iran", "New Zealand"],
+  H: ["Spain", "Cape Verde", "Saudi Arabia", "Uruguay"],
+  I: ["France", "Senegal", "Iraq", "Norway"],
+  J: ["Argentina", "Algeria", "Austria", "Jordan"],
+  K: ["Portugal", "DR Congo", "Uzbekistan", "Colombia"],
+  L: ["England", "Croatia", "Ghana", "Panama"]
+};
+
+const FEEDS = {
+  // R32 — each side maps to one or more groups
+  73: [{k:"g", l:["A"]},                   {k:"g", l:["B"]}],
+  74: [{k:"g", l:["E"]},                   {k:"g", l:["A","B","C","D","F"]}],
+  75: [{k:"g", l:["F"]},                   {k:"g", l:["C"]}],
+  76: [{k:"g", l:["C"]},                   {k:"g", l:["F"]}],
+  77: [{k:"g", l:["I"]},                   {k:"g", l:["C","D","F","G","H"]}],
+  78: [{k:"g", l:["E"]},                   {k:"g", l:["I"]}],
+  79: [{k:"g", l:["A"]},                   {k:"g", l:["C","E","F","H","I"]}],
+  80: [{k:"g", l:["L"]},                   {k:"g", l:["E","H","I","J","K"]}],
+  81: [{k:"g", l:["D"]},                   {k:"g", l:["B","E","F","I","J"]}],
+  82: [{k:"g", l:["G"]},                   {k:"g", l:["A","E","H","I","J"]}],
+  83: [{k:"g", l:["K"]},                   {k:"g", l:["L"]}],
+  84: [{k:"g", l:["H"]},                   {k:"g", l:["J"]}],
+  85: [{k:"g", l:["B"]},                   {k:"g", l:["E","F","G","I","J"]}],
+  86: [{k:"g", l:["J"]},                   {k:"g", l:["H"]}],
+  87: [{k:"g", l:["K"]},                   {k:"g", l:["D","E","I","J","L"]}],
+  88: [{k:"g", l:["D"]},                   {k:"g", l:["G"]}],
+  // R16
+  89: [{k:"m", r:[74]}, {k:"m", r:[77]}],
+  90: [{k:"m", r:[73]}, {k:"m", r:[75]}],
+  91: [{k:"m", r:[76]}, {k:"m", r:[78]}],
+  92: [{k:"m", r:[79]}, {k:"m", r:[80]}],
+  93: [{k:"m", r:[83]}, {k:"m", r:[84]}],
+  94: [{k:"m", r:[81]}, {k:"m", r:[82]}],
+  95: [{k:"m", r:[86]}, {k:"m", r:[88]}],
+  96: [{k:"m", r:[85]}, {k:"m", r:[87]}],
+  // QF
+  97:  [{k:"m", r:[89]}, {k:"m", r:[90]}],
+  98:  [{k:"m", r:[93]}, {k:"m", r:[94]}],
+  99:  [{k:"m", r:[91]}, {k:"m", r:[92]}],
+  100: [{k:"m", r:[95]}, {k:"m", r:[96]}],
+  // SF
+  101: [{k:"m", r:[97]}, {k:"m", r:[98]}],
+  102: [{k:"m", r:[99]}, {k:"m", r:[100]}],
+  // 3rd-place and Final draw from the same two SFs
+  103: [{k:"m", r:[101]}, {k:"m", r:[102]}],
+  104: [{k:"m", r:[101]}, {k:"m", r:[102]}]
+};
+
+const _matchPossibleCache = {};
+function teamsForSide(feed) {
+  if (feed.k === "g") {
+    const out = new Set();
+    feed.l.forEach(L => GROUPS[L].forEach(t => out.add(t)));
+    return out;
+  }
+  // feed.k === "m"
+  const out = new Set();
+  feed.r.forEach(num => {
+    const tm = teamsForMatch(num);
+    tm.forEach(t => out.add(t));
+  });
+  return out;
+}
+function teamsForMatch(num) {
+  if (_matchPossibleCache[num]) return _matchPossibleCache[num];
+  const sides = FEEDS[num];
+  if (!sides) return new Set();
+  const both = new Set();
+  sides.forEach(s => teamsForSide(s).forEach(t => both.add(t)));
+  _matchPossibleCache[num] = both;
+  return both;
+}
+function possibleTeamsFor(matchNum) {
+  const feed = FEEDS[matchNum];
+  if (!feed) return null;
+  // Side 1 and side 2 individually
+  const s1 = [...teamsForSide(feed[0])].sort();
+  const s2 = [...teamsForSide(feed[1])].sort();
+  // Determine which groups each side comes from for display tags
+  const s1Groups = describeSide(feed[0]);
+  const s2Groups = describeSide(feed[1]);
+  return { side1: s1, side2: s2, side1Groups: s1Groups, side2Groups: s2Groups };
+}
+function describeSide(feed) {
+  if (feed.k === "g") return feed.l.slice();
+  // For match-feeds, recurse and collect group letters
+  const letters = new Set();
+  feed.r.forEach(num => {
+    const sides = FEEDS[num];
+    sides.forEach(s => describeSide(s).forEach(L => letters.add(L)));
+  });
+  return [...letters].sort();
+}
+
+function pad(n){ return n<10 ? "0"+n : ""+n; }
+
+// Convert ET time string ("HH:MM") plus a base date to a UK BST display.
+// BST = ET + 5 hours during June/July 2026. Roll over the date if needed.
+function toBST(dateStr, etTime) {
+  const [Y, M, D] = dateStr.split("-").map(Number);
+  const [h, m] = etTime.split(":").map(Number);
+  // Build a Date for ET hour, then add 5 hrs to get BST.
+  const dt = new Date(Date.UTC(Y, M-1, D, h+5, m));
+  const hh = dt.getUTCHours();
+  const mm = dt.getUTCMinutes();
+  const Y2 = dt.getUTCFullYear();
+  const M2 = dt.getUTCMonth()+1;
+  const D2 = dt.getUTCDate();
+  const sameDay = (Y===Y2 && (M-1)===(M2-1) && D===D2);
+  const ampmH = ((hh+11)%12)+1;
+  const ap = hh<12 ? "AM" : "PM";
+  const label = `${ampmH}:${pad(mm)} ${ap}`;
+  return sameDay ? label : `${label} <span style="color:#FF4500;">(+1d)</span>`;
+}
+
+function fmtET(et) {
+  const [h, m] = et.split(":").map(Number);
+  const ampmH = ((h+11)%12)+1;
+  const ap = h<12 ? "AM" : "PM";
+  return `${ampmH}:${pad(m)} ${ap}`;
+}
+
+function fmtDate(dateStr) {
+  const [Y, M, D] = dateStr.split("-").map(Number);
+  const dt = new Date(Date.UTC(Y, M-1, D));
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${WEEKDAY[dt.getUTCDay()]} ${D} ${months[M-1]}`;
+}
+
+// ============================================
+// Team name normalisation - mirrors server (api/_lib.js)
+// ============================================
+const NAME_MAP = {
+  "united states": "usa",
+  "turkey": "türkiye",
+  "korea republic": "south korea",
+  "republic of korea": "south korea",
+  "czech republic": "czechia",
+  "côte d'ivoire": "ivory coast",
+  "cote d'ivoire": "ivory coast",
+  "ivory coast": "ivory coast",
+  "cape verde": "cape verde",
+  "cabo verde": "cape verde",
+  "dr congo": "dr congo",
+  "democratic republic of the congo": "dr congo",
+  "congo dr": "dr congo"
+};
+function normaliseTeam(raw) {
+  if (!raw) return "";
+  const lower = String(raw).trim().toLowerCase();
+  return NAME_MAP[lower] || lower;
+}
+function joinKeyFor(match) {
+  // match.date is already YYYY-MM-DD and represents the UTC calendar date
+  // of the kick-off. Server uses the UTC date of commence_time, which lines
+  // up with FIFA's published schedule date.
+  const a = normaliseTeam(match.t1);
+  const b = normaliseTeam(match.t2);
+  const [first, second] = [a, b].sort();
+  return `${match.date}|${first}|${second}`;
+}
+
+// ============================================
+// Live state - filled by the polling fetchers below
+// ============================================
+const LIVE = {
+  scores: { matches: {}, updated: null, quotaRemaining: null, error: null },
+  odds:   { matches: {}, updated: null, quotaRemaining: null, error: null },
+  outrights: { teams: [], updated: null, quotaRemaining: null, error: null }
+};
+
+function scoreHTML(match) {
+  const s = LIVE.scores.matches[joinKeyFor(match)];
+  // Default = original "vs" separator with no badge.
+  if (!s) return { center: '<span class="vs">vs</span>', badge: '' };
+  const home = s.homeScore != null ? s.homeScore : '';
+  const away = s.awayScore != null ? s.awayScore : '';
+  // Map server's home/away back to this row's t1/t2 by name match.
+  const t1IsHome = normaliseTeam(match.t1) === normaliseTeam(s.homeTeam);
+  const left  = t1IsHome ? home : away;
+  const right = t1IsHome ? away : home;
+  const hasScore = left !== '' || right !== '';
+  let center;
+  if (hasScore) {
+    center = `<span class="score">${left} – ${right}</span>`;
+  } else {
+    center = '<span class="vs">vs</span>';
+  }
+  let badge = '';
+  if (s.status === 'FT') {
+    badge = `<span class="status-badge status-FT">FT</span>`;
+  } else if (s.status === 'LIVE') {
+    badge = `<span class="status-badge status-LIVE"><span class="live-dot"></span>LIVE</span>`;
+  }
+  return { center, badge };
+}
+
+function oddsHTML(match) {
+  // Only show odds for group-stage rows and when the match has not gone in-play
+  // or finished. Knockout rows can opt in if odds happen to be published.
+  const s = LIVE.scores.matches[joinKeyFor(match)];
+  if (s && (s.status === 'LIVE' || s.status === 'FT')) return '';
+  const o = LIVE.odds.matches[joinKeyFor(match)];
+  if (!o || !o.best) return '';
+  const home = o.best.home, draw = o.best.draw, away = o.best.away;
+  // Map odds home/away back to this row's t1/t2
+  const t1IsHome = normaliseTeam(match.t1) === normaliseTeam(o.homeTeam);
+  const left  = t1IsHome ? home : away;
+  const right = t1IsHome ? away : home;
+  const chips = [];
+  if (left)  chips.push(`<span class="odds-chip" title="${left.bookmaker}"><span class="odds-side">1</span>${left.price.toFixed(2)}</span>`);
+  if (draw)  chips.push(`<span class="odds-chip" title="${draw.bookmaker}"><span class="odds-side">X</span>${draw.price.toFixed(2)}</span>`);
+  if (right) chips.push(`<span class="odds-chip" title="${right.bookmaker}"><span class="odds-side">2</span>${right.price.toFixed(2)}</span>`);
+  if (!chips.length) return '';
+  return `<div class="odds-row">${chips.join('')}</div>`;
+}
+
+// ============================================
+// Build records
+// ============================================
+const MATCHES = RAW.map(r => ({
+  num: r[0], date: r[1], timeET: r[2], stage: r[3],
+  t1: r[4], t2: r[5], venue: r[6], city: r[7], country: r[8]
+})).sort((a,b)=> a.num - b.num);
+
+// Distinct teams (group-stage only — knockout uses placeholders)
+const TEAMS = Array.from(new Set(
+  MATCHES.filter(m => m.stage.length===1).flatMap(m => [m.t1, m.t2])
+)).sort();
+
+// Distinct venue+city pairs
+const VENUES = Array.from(new Set(
+  MATCHES.map(m => `${m.venue}|${m.city}|${m.country}`)
+)).sort();
+
+// Populate dropdowns
+const teamSel = document.getElementById("teamFilter");
+TEAMS.forEach(t => {
+  const o = document.createElement("option");
+  o.value = t; o.textContent = t;
+  teamSel.appendChild(o);
+});
+
+const venueSel = document.getElementById("venueFilter");
+VENUES.forEach(v => {
+  const [venue, city, country] = v.split("|");
+  const o = document.createElement("option");
+  o.value = v;
+  o.textContent = `${city} — ${venue} (${COUNTRY_LABEL[country]})`;
+  venueSel.appendChild(o);
+});
+
+// ============================================
+// State + render
+// ============================================
+const state = {
+  search: "",
+  team: "",
+  venue: "",
+  stage: "",
+  sortKey: "num",
+  sortDir: 1,
+  expanded: new Set(),
+  expandAll: false
+};
+
+function applyFilters() {
+  let out = MATCHES.slice();
+  const q = state.search.trim().toLowerCase();
+  if (q) {
+    out = out.filter(m => {
+      const baseMatch =
+        m.t1.toLowerCase().includes(q) ||
+        m.t2.toLowerCase().includes(q) ||
+        m.venue.toLowerCase().includes(q) ||
+        m.city.toLowerCase().includes(q) ||
+        (STAGE_LABEL[m.stage]||"").toLowerCase().includes(q);
+      if (baseMatch) return true;
+      // For knockout matches, also match against possible teams
+      if (m.stage.length > 1) {
+        const pt = possibleTeamsFor(m.num);
+        if (pt) {
+          return pt.side1.some(t => t.toLowerCase().includes(q)) ||
+                 pt.side2.some(t => t.toLowerCase().includes(q));
+        }
+      }
+      return false;
+    });
+  }
+  if (state.team) {
+    out = out.filter(m => {
+      if (m.t1 === state.team || m.t2 === state.team) return true;
+      if (m.stage.length > 1) {
+        const pt = possibleTeamsFor(m.num);
+        if (pt) return pt.side1.includes(state.team) || pt.side2.includes(state.team);
+      }
+      return false;
+    });
+  }
+  if (state.venue) {
+    const [venue, city] = state.venue.split("|");
+    out = out.filter(m => m.venue===venue && m.city===city);
+  }
+  if (state.stage) {
+    if (state.stage === "GROUP") {
+      out = out.filter(m => m.stage.length === 1);
+    } else {
+      out = out.filter(m => m.stage === state.stage);
+    }
+  }
+
+  out.sort((a, b) => {
+    const dir = state.sortDir;
+    const k = state.sortKey;
+    let av, bv;
+    if (k === "num") { av = a.num; bv = b.num; }
+    else if (k === "date") { av = a.date+" "+a.timeET; bv = b.date+" "+b.timeET; }
+    else if (k === "timeET") { av = a.timeET; bv = b.timeET; }
+    else if (k === "stage") { av = (STAGE_LABEL[a.stage]||""); bv = (STAGE_LABEL[b.stage]||""); }
+    else if (k === "match") { av = a.t1+" "+a.t2; bv = b.t1+" "+b.t2; }
+    else if (k === "venue") { av = a.venue; bv = b.venue; }
+    else if (k === "city") { av = a.city; bv = b.city; }
+    if (av < bv) return -1*dir;
+    if (av > bv) return 1*dir;
+    return a.num - b.num;
+  });
+  return out;
+}
+
+function render() {
+  const rows = applyFilters();
+  const body = document.getElementById("fixtureBody");
+  body.innerHTML = "";
+
+  if (rows.length === 0) {
+    const tr = document.createElement("tr");
+    tr.className = "no-results";
+    tr.innerHTML = `<td colspan="7">No matches match those filters. Try clearing the search or resetting.</td>`;
+    body.appendChild(tr);
+  } else {
+    rows.forEach(m => {
+      const tr = document.createElement("tr");
+      const isKnockout = m.stage.length > 1;
+      const isOpen = isKnockout && (state.expandAll || state.expanded.has(m.num));
+      if (isKnockout) {
+        tr.classList.add("knockout-row");
+        if (isOpen) tr.classList.add("is-expanded");
+        tr.addEventListener("click", () => {
+          if (state.expandAll) {
+            // Switch off expandAll, then close only this one
+            state.expandAll = false;
+            // Pre-populate expanded with all knockouts so others stay open
+            MATCHES.forEach(mm => { if (mm.stage.length > 1) state.expanded.add(mm.num); });
+            state.expanded.delete(m.num);
+          } else if (state.expanded.has(m.num)) {
+            state.expanded.delete(m.num);
+          } else {
+            state.expanded.add(m.num);
+          }
+          syncExpandAllBtn();
+          render();
+        });
+      }
+
+      const flag = `<span class="country-flag ${COUNTRY_CLASS[m.country]||""}">${COUNTRY_LABEL[m.country]||m.country}</span>`;
+      const sc = scoreHTML(m);
+      const oddsBlock = m.stage.length === 1 ? oddsHTML(m) : oddsHTML(m); // try for both; oddsHTML self-gates
+      tr.innerHTML = `
+        <td class="match-num">M${m.num}</td>
+        <td class="date-cell">${fmtDate(m.date)}<span class="date-weekday">${m.date}</span></td>
+        <td>
+          <div class="time-et">${fmtET(m.timeET)} ET</div>
+          <div class="time-uk">${toBST(m.date, m.timeET)} BST</div>
+        </td>
+        <td><span class="stage-badge stage-${m.stage}">${STAGE_LABEL[m.stage]||m.stage}</span></td>
+        <td class="teams">${m.t1} ${sc.center} ${m.t2}${sc.badge}${oddsBlock}</td>
+        <td class="venue">${m.venue}</td>
+        <td class="city">${m.city} ${flag}</td>
+      `;
+      body.appendChild(tr);
+
+      if (isOpen) {
+        const trEx = document.createElement("tr");
+        trEx.className = "expanded-row";
+        const pt = possibleTeamsFor(m.num);
+        const renderTeams = (teams, sourceGroups) => teams.map(t => {
+          // Highlight teams whose group is among the source groups so it's clear where they come from
+          const grp = Object.keys(GROUPS).find(g => GROUPS[g].includes(t));
+          const fromGrp = sourceGroups.includes(grp);
+          return `<span class="team-chip ${fromGrp ? "from-group" : ""}" title="Group ${grp}">${t} <span style="opacity:0.55; font-size:9px;">${grp}</span></span>`;
+        }).join("");
+        const groupsTagS1 = pt.side1Groups.map(g => `Group ${g}`).join(" · ");
+        const groupsTagS2 = pt.side2Groups.map(g => `Group ${g}`).join(" · ");
+        trEx.innerHTML = `
+          <td colspan="7">
+            <div class="expand-grid">
+              <div class="expand-side">
+                <div class="expand-label">${m.t1} <span class="expand-count">— ${pt.side1.length} possible · ${groupsTagS1}</span></div>
+                <div class="expand-teams">${renderTeams(pt.side1, pt.side1Groups)}</div>
+              </div>
+              <div class="expand-side">
+                <div class="expand-label">${m.t2} <span class="expand-count">— ${pt.side2.length} possible · ${groupsTagS2}</span></div>
+                <div class="expand-teams">${renderTeams(pt.side2, pt.side2Groups)}</div>
+              </div>
+              ${m.stage === "FIN" || m.stage === "3RD" || m.stage === "SF" || m.stage === "QF"
+                ? '<div class="expand-note">Both sides draw from the same pool of teams in this match — either could face either.</div>'
+                : ''}
+            </div>
+          </td>
+        `;
+        body.appendChild(trEx);
+      }
+    });
+  }
+
+  document.getElementById("resultCount").textContent = rows.length;
+  const extras = [];
+  if (state.search) extras.push(`search: "${state.search}"`);
+  if (state.team) extras.push(`team: ${state.team} (incl. possible knockout matches)`);
+  if (state.venue) {
+    const parts = state.venue.split("|");
+    extras.push(`venue: ${parts[1]}`);
+  }
+  if (state.stage) extras.push(`stage: ${state.stage === "GROUP" ? "Group stage" : (STAGE_LABEL[state.stage]||state.stage)}`);
+  document.getElementById("resultExtra").textContent = extras.length
+    ? "Filters: " + extras.join(" · ")
+    : "Click any knockout match (R32 onward) to see all possible teams · click a column header to sort";
+
+  // Update sort indicators
+  document.querySelectorAll("thead th").forEach(th => {
+    const ind = th.querySelector(".sort-ind");
+    if (ind) ind.remove();
+    if (th.dataset.sort === state.sortKey) {
+      const s = document.createElement("span");
+      s.className = "sort-ind";
+      s.textContent = state.sortDir === 1 ? "↑" : "↓";
+      th.appendChild(s);
+    }
+  });
+}
+
+// ============================================
+// Wire up controls
+// ============================================
+document.getElementById("search").addEventListener("input", e => {
+  state.search = e.target.value;
+  render();
+});
+document.getElementById("teamFilter").addEventListener("change", e => {
+  state.team = e.target.value;
+  render();
+});
+document.getElementById("venueFilter").addEventListener("change", e => {
+  state.venue = e.target.value;
+  render();
+});
+document.getElementById("stageFilter").addEventListener("change", e => {
+  state.stage = e.target.value;
+  syncChips();
+  render();
+});
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  state.search = ""; state.team = ""; state.venue = ""; state.stage = "";
+  state.sortKey = "num"; state.sortDir = 1;
+  state.expanded = new Set(); state.expandAll = false;
+  document.getElementById("search").value = "";
+  document.getElementById("teamFilter").value = "";
+  document.getElementById("venueFilter").value = "";
+  document.getElementById("stageFilter").value = "";
+  syncChips();
+  syncExpandAllBtn();
+  render();
+});
+
+const expandAllBtn = document.getElementById("expandAllBtn");
+function syncExpandAllBtn() {
+  expandAllBtn.classList.toggle("active", state.expandAll);
+  expandAllBtn.textContent = state.expandAll
+    ? "Hide possible teams"
+    : "Show possible teams for all knockouts";
+}
+expandAllBtn.addEventListener("click", () => {
+  state.expandAll = !state.expandAll;
+  state.expanded = new Set(); // clear individual selections when toggling global
+  syncExpandAllBtn();
+  render();
+});
+
+document.querySelectorAll("thead th").forEach(th => {
+  th.addEventListener("click", () => {
+    const k = th.dataset.sort;
+    if (state.sortKey === k) state.sortDir = -state.sortDir;
+    else { state.sortKey = k; state.sortDir = 1; }
+    render();
+  });
+});
+
+// Chip buttons mirror stage filter
+function syncChips() {
+  document.querySelectorAll("#stageChips .chip").forEach(c => {
+    c.classList.toggle("active", c.dataset.stage === state.stage);
+  });
+}
+document.querySelectorAll("#stageChips .chip").forEach(c => {
+  c.addEventListener("click", () => {
+    state.stage = c.dataset.stage;
+    document.getElementById("stageFilter").value = state.stage;
+    syncChips();
+    render();
+  });
+});
+
+// First render
+render();
+
+// ============================================
+// Live data layer - scores, odds, outrights
+// All polling is silent: if a fetch fails the UI keeps working with
+// whatever data was previously cached. Status strip surfaces freshness.
+// ============================================
+const POLL_SCORES_MS = 60 * 1000;        // 60s
+const POLL_ODDS_MS = 5 * 60 * 1000;      // 5min
+const STATUS_TICK_MS = 5 * 1000;         // 5s
+
+let scoresTimer = null;
+let oddsTimer = null;
+let statusTimer = null;
+
+async function fetchJSON(path) {
+  try {
+    const res = await fetch(path, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchScores() {
+  const payload = await fetchJSON('/api/scores');
+  if (!payload) {
+    LIVE.scores.error = 'network';
+  } else {
+    LIVE.scores = {
+      matches: payload.matches || {},
+      updated: payload.updated,
+      quotaRemaining: payload.quotaRemaining,
+      error: payload.error
+    };
+  }
+  updateStatusStrip();
+  render();
+}
+
+async function fetchOdds() {
+  const payload = await fetchJSON('/api/odds');
+  if (!payload) {
+    LIVE.odds.error = 'network';
+  } else {
+    LIVE.odds = {
+      matches: payload.matches || {},
+      updated: payload.updated,
+      quotaRemaining: payload.quotaRemaining,
+      error: payload.error
+    };
+  }
+  updateStatusStrip();
+  render();
+}
+
+async function fetchOutrights() {
+  const payload = await fetchJSON('/api/outrights');
+  if (!payload) {
+    LIVE.outrights.error = 'network';
+  } else {
+    LIVE.outrights = {
+      teams: payload.teams || [],
+      updated: payload.updated,
+      quotaRemaining: payload.quotaRemaining,
+      error: payload.error
+    };
+  }
+  renderOutrights();
+  updateStatusStrip();
+}
+
+function freshnessClass(updatedISO, staleAfterMs) {
+  if (!updatedISO) return 'error';
+  const ageMs = Date.now() - new Date(updatedISO).getTime();
+  if (ageMs > staleAfterMs) return 'stale';
+  return 'fresh';
+}
+
+function ageLabel(updatedISO) {
+  if (!updatedISO) return 'unavailable';
+  const ageMs = Date.now() - new Date(updatedISO).getTime();
+  const sec = Math.round(ageMs / 1000);
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.round(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.round(min / 60);
+  return `${hr}h ago`;
+}
+
+function updateStatusStrip() {
+  const sEl = document.getElementById('scoresStat');
+  const oEl = document.getElementById('oddsStat');
+  const qEl = document.getElementById('quotaStat');
+  const sc = LIVE.scores, od = LIVE.odds;
+  sEl.className = 'stat-tag ' + freshnessClass(sc.updated, 3 * 60 * 1000);
+  sEl.textContent = `Scores: ${sc.error ? 'error' : ageLabel(sc.updated)}`;
+  oEl.className = 'stat-tag ' + freshnessClass(od.updated, 15 * 60 * 1000);
+  oEl.textContent = `Odds: ${od.error ? 'error' : ageLabel(od.updated)}`;
+  // Show whichever quota number we last received
+  const quota = od.quotaRemaining || sc.quotaRemaining || LIVE.outrights.quotaRemaining;
+  qEl.textContent = quota != null ? `quota: ${quota} left` : '';
+}
+
+function renderOutrights() {
+  const meta = document.getElementById('outrightsMeta');
+  const body = document.getElementById('outrightsBody');
+  const o = LIVE.outrights;
+  if (o.error || !o.teams.length) {
+    meta.textContent = o.error ? 'Unavailable' : 'No market yet';
+    body.innerHTML = '<div class="outrights-empty">Outright tournament-winner odds will appear here once UK bookmakers publish a market.</div>';
+    return;
+  }
+  meta.textContent = `Updated ${ageLabel(o.updated)} · best of UK books`;
+  const top = o.teams.slice(0, 10);
+  body.innerHTML = `
+    <div class="outrights-grid">
+      ${top.map((t, i) => `
+        <div class="outright-card">
+          <div class="rank">#${i + 1}</div>
+          <div class="team">${t.team}</div>
+          <div class="price">${Number(t.bestPrice).toFixed(2)}</div>
+          <div class="bm">${t.bookmaker}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// Outrights panel toggle
+document.getElementById('outrightsHead').addEventListener('click', () => {
+  document.getElementById('outrightsPanel').classList.toggle('is-open');
+});
+
+function startPolling() {
+  // Kick off immediately, then on interval
+  fetchScores();
+  fetchOdds();
+  fetchOutrights();
+  scoresTimer = setInterval(fetchScores, POLL_SCORES_MS);
+  oddsTimer = setInterval(fetchOdds, POLL_ODDS_MS);
+  statusTimer = setInterval(updateStatusStrip, STATUS_TICK_MS);
+}
+function stopPolling() {
+  if (scoresTimer) clearInterval(scoresTimer);
+  if (oddsTimer) clearInterval(oddsTimer);
+  if (statusTimer) clearInterval(statusTimer);
+  scoresTimer = oddsTimer = statusTimer = null;
+}
+
+// Pause polling when the tab is hidden to be quota-friendly.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    stopPolling();
+  } else if (!scoresTimer) {
+    startPolling();
+  }
+});
+
+startPolling();
+</script>
+</body>
+</html>
