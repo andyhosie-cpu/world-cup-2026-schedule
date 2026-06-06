@@ -591,12 +591,15 @@ async function runDraw(mode) {
   updateHeaderStatus();
   renderResults();
 
-  const shuffledEmployees = shuffle(EMPLOYEES);
+  // Employees go in list order (so viewers can follow along by name).
+  // Only the team pool is shuffled - which is statistically equivalent to
+  // shuffling both but easier to track on the call.
+  const orderedEmployees = EMPLOYEES.slice();
   const shuffledTeams = shuffle(TEAMS);
   const tick = mode === 'live' ? DRAW_TICK_LIVE : DRAW_TICK_DRY;
 
-  for (let i = 0; i < shuffledEmployees.length; i++) {
-    const emp = shuffledEmployees[i];
+  for (let i = 0; i < orderedEmployees.length; i++) {
+    const emp = orderedEmployees[i];
     const t = shuffledTeams[i];
     drawState.assignments.push({
       employee: emp,
@@ -610,8 +613,8 @@ async function runDraw(mode) {
     await sleep(tick);
   }
   // Leftover team
-  if (shuffledTeams.length > shuffledEmployees.length) {
-    const lt = shuffledTeams[shuffledEmployees.length];
+  if (shuffledTeams.length > orderedEmployees.length) {
+    const lt = shuffledTeams[orderedEmployees.length];
     drawState.leftover = { team: lt.team, price: Number(lt.bestPrice), bookmaker: lt.bookmaker || '' };
   }
   drawState.running = false;
