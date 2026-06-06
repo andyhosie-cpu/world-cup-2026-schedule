@@ -608,7 +608,7 @@ async function runDraw(mode) {
       bookmaker: t.bookmaker || ''
     });
     if (mode === 'live') saveLocal();
-    setStatus(`Drawing ${i + 1} of ${shuffledEmployees.length}: ${emp} → ${t.team} @ ${Number(t.bestPrice).toFixed(2)}`, mode === 'live' ? 'live' : 'progress');
+    setStatus(`Drawing ${i + 1} of ${orderedEmployees.length}: ${emp} → ${t.team} @ ${Number(t.bestPrice).toFixed(2)}`, mode === 'live' ? 'live' : 'progress');
     renderResults();
     await sleep(tick);
   }
