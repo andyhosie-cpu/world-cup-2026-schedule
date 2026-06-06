@@ -410,6 +410,24 @@
     font-style: italic;
   }
 
+  /* TV channel badges (UK broadcast) */
+  .tv-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+    background: #f0f0f0;
+    color: #555;
+  }
+  .tv-badge.bbc-one { background: #DBEAFE; color: #1D4ED8; }
+  .tv-badge.bbc-two { background: #FCE7F3; color: #BE185D; }
+  .tv-badge.itv-1   { background: #FEE2E2; color: #B91C1C; }
+  .tv-badge.itv-4   { background: #FEF3C7; color: #92400E; }
+  .tv-empty { color: #BBB; font-size: 10px; font-style: italic; }
+
   /* Status strip near summary bar */
   .status-strip {
     display: flex;
@@ -690,6 +708,7 @@
           <th data-sort="match">Match</th>
           <th data-sort="venue">Venue</th>
           <th data-sort="city">City</th>
+          <th data-sort="tv" style="width: 80px;">TV (UK)</th>
         </tr>
       </thead>
       <tbody id="fixtureBody"></tbody>
@@ -1005,6 +1024,73 @@ function fmtDate(dateStr) {
   const dt = new Date(Date.UTC(Y, M-1, D));
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   return `${WEEKDAY[dt.getUTCDay()]} ${D} ${months[M-1]}`;
+}
+
+// ============================================
+// UK TV broadcasters per fixture (group stage).
+// Source: live-footballontv.com - first channel listed when multiple
+// broadcasters share a match (BBC One usually leads over Red Button etc.)
+// ============================================
+const TV_CHANNELS_RAW = [
+  ["Mexico","South Africa","ITV1"], ["South Korea","Czechia","ITV1"],
+  ["Canada","Bosnia-Herzegovina","BBC One"], ["USA","Paraguay","BBC One"],
+  ["Qatar","Switzerland","ITV1"], ["Brazil","Morocco","BBC One"],
+  ["Haiti","Scotland","BBC One"], ["Australia","Turkey","ITV1"],
+  ["Germany","Curacao","ITV1"], ["Netherlands","Japan","ITV1"],
+  ["Ivory Coast","Ecuador","BBC One"], ["Sweden","Tunisia","ITV1"],
+  ["Spain","Cape Verde","ITV1"], ["Belgium","Egypt","BBC One"],
+  ["Saudi Arabia","Uruguay","ITV1"], ["Iran","New Zealand","BBC One"],
+  ["France","Senegal","BBC One"], ["Iraq","Norway","BBC One"],
+  ["Argentina","Algeria","ITV1"], ["Austria","Jordan","BBC One"],
+  ["Portugal","DR Congo","BBC One"], ["England","Croatia","ITV1"],
+  ["Ghana","Panama","ITV1"], ["Uzbekistan","Colombia","BBC One"],
+  ["Czechia","South Africa","BBC One"], ["Switzerland","Bosnia-Herzegovina","ITV1"],
+  ["Canada","Qatar","ITV1"], ["Mexico","South Korea","BBC One"],
+  ["USA","Australia","BBC One"], ["Scotland","Morocco","ITV1"],
+  ["Brazil","Haiti","ITV1"], ["Turkey","Paraguay","ITV1"],
+  ["Netherlands","Sweden","BBC One"], ["Germany","Ivory Coast","ITV1"],
+  ["Ecuador","Curacao","BBC One"], ["Tunisia","Japan","BBC One"],
+  ["Spain","Saudi Arabia","BBC One"], ["Belgium","Iran","ITV1"],
+  ["Uruguay","Cape Verde","BBC One"], ["New Zealand","Egypt","ITV1"],
+  ["Argentina","Austria","BBC One"], ["France","Iraq","BBC One"],
+  ["Norway","Senegal","ITV1"], ["Jordan","Algeria","ITV1"],
+  ["Portugal","Uzbekistan","ITV1"], ["England","Ghana","BBC One"],
+  ["Panama","Croatia","BBC One"], ["Colombia","DR Congo","ITV1"],
+  ["Bosnia-Herzegovina","Qatar","ITV4"], ["Switzerland","Canada","ITV1"],
+  ["Morocco","Haiti","BBC Two"], ["Scotland","Brazil","BBC One"],
+  ["Czechia","Mexico","BBC One"], ["South Africa","South Korea","BBC Two"],
+  ["Curacao","Ivory Coast","BBC Two"], ["Ecuador","Germany","BBC One"],
+  ["Japan","Sweden","BBC Two"], ["Tunisia","Netherlands","BBC One"],
+  ["Paraguay","Australia","ITV4"], ["Turkey","USA","ITV1"],
+  ["Norway","France","ITV1"], ["Senegal","Iraq","ITV4"],
+  ["Cape Verde","Saudi Arabia","ITV4"], ["Uruguay","Spain","ITV1"],
+  ["Egypt","Iran","BBC Two"], ["New Zealand","Belgium","BBC One"],
+  ["Croatia","Ghana","ITV4"], ["Panama","England","ITV1"],
+  ["Colombia","Portugal","BBC One"], ["DR Congo","Uzbekistan","BBC Two"],
+  ["Algeria","Austria","BBC Two"], ["Jordan","Argentina","BBC One"],
+];
+function _tvCanonical(n) {
+  let s = String(n).toLowerCase().trim().replace(/-/g, " ");
+  // Resolve to the canonical form the static fixture data uses.
+  const aliases = {
+    "turkey": "türkiye", "czech republic": "czechia",
+    "bosnia herzegovina": "bosnia and herzegovina",
+    "curacao": "curaçao",
+  };
+  return aliases[s] || s;
+}
+const TV_CHANNELS = {};
+for (const [t1, t2, ch] of TV_CHANNELS_RAW) {
+  const a = _tvCanonical(t1), b = _tvCanonical(t2);
+  TV_CHANNELS[[a, b].sort().join("|")] = ch;
+}
+function tvChannelFor(match) {
+  const a = _tvCanonical(match.t1), b = _tvCanonical(match.t2);
+  return TV_CHANNELS[[a, b].sort().join("|")] || null;
+}
+function tvBadgeClass(channel) {
+  if (!channel) return "";
+  return "tv-" + channel.toLowerCase().replace(/\s+/g, "-");
 }
 
 // ============================================
@@ -1356,6 +1442,7 @@ function applyFilters() {
     else if (k === "match") { av = a.t1+" "+a.t2; bv = b.t1+" "+b.t2; }
     else if (k === "venue") { av = a.venue; bv = b.venue; }
     else if (k === "city") { av = a.city; bv = b.city; }
+    else if (k === "tv") { av = tvChannelFor(a) || "ZZZ"; bv = tvChannelFor(b) || "ZZZ"; }
     if (av < bv) return -1*dir;
     if (av > bv) return 1*dir;
     return a.num - b.num;
@@ -1378,7 +1465,7 @@ function render() {
       const safe = guess.text.replace(/"/g, "&quot;");
       suggestionHtml = ` Did you mean <a href="#" class="suggest-link" data-suggest="${safe}">${guess.text}</a>?`;
     }
-    tr.innerHTML = `<td colspan="7">No matches match those filters.${suggestionHtml} Or try clearing the search.</td>`;
+    tr.innerHTML = `<td colspan="8">No matches match those filters.${suggestionHtml} Or try clearing the search.</td>`;
     body.appendChild(tr);
     // Wire the suggestion click to apply the suggested term as the search.
     const link = tr.querySelector(".suggest-link");
@@ -1418,6 +1505,10 @@ function render() {
       const flag = `<span class="country-flag ${COUNTRY_CLASS[m.country]||""}">${COUNTRY_LABEL[m.country]||m.country}</span>`;
       const sc = scoreHTML(m);
       const oddsBlock = m.stage.length === 1 ? oddsHTML(m) : oddsHTML(m); // try for both; oddsHTML self-gates
+      const tvCh = tvChannelFor(m);
+      const tvCell = tvCh
+        ? `<span class="tv-badge ${tvBadgeClass(tvCh)}">${tvCh}</span>`
+        : `<span class="tv-empty">TBC</span>`;
       tr.innerHTML = `
         <td class="match-num">M${m.num}</td>
         <td class="date-cell">${fmtDate(m.date)}<span class="date-weekday">${m.date}</span></td>
@@ -1429,6 +1520,7 @@ function render() {
         <td class="teams">${m.t1} ${sc.center} ${m.t2}${sc.badge}${oddsBlock}</td>
         <td class="venue">${m.venue}</td>
         <td class="city">${m.city} ${flag}</td>
+        <td>${tvCell}</td>
       `;
       body.appendChild(tr);
 
@@ -1445,7 +1537,7 @@ function render() {
         const groupsTagS1 = pt.side1Groups.map(g => `Group ${g}`).join(" · ");
         const groupsTagS2 = pt.side2Groups.map(g => `Group ${g}`).join(" · ");
         trEx.innerHTML = `
-          <td colspan="7">
+          <td colspan="8">
             <div class="expand-grid">
               <div class="expand-side">
                 <div class="expand-label">${m.t1} <span class="expand-count">— ${pt.side1.length} possible · ${groupsTagS1}</span></div>
