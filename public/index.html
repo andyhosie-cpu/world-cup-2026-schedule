@@ -442,13 +442,52 @@
   .outrights-head {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 14px;
     padding: 10px 16px;
     cursor: pointer;
     user-select: none;
     background: #FFF5F0;
     border-bottom: 1px solid transparent;
     transition: background 0.12s;
+  }
+  .outrights-inline-chips {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+  }
+  .outright-inline-chip {
+    font-size: 10px;
+    padding: 2px 7px 2px 6px;
+    background: #fff;
+    border: 1px solid #FFCFB4;
+    border-radius: 3px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    font-weight: 600;
+  }
+  .outright-inline-chip .inline-rank {
+    color: #999;
+    font-size: 9px;
+    font-weight: 700;
+  }
+  .outright-inline-chip .inline-team {
+    color: #1a1a1a;
+    font-weight: 600;
+  }
+  .outright-inline-chip .inline-price {
+    color: #FF4500;
+    font-weight: 700;
+  }
+  @media (max-width: 700px) {
+    .outrights-inline-chips { display: none; }
+  }
+  .outrights-meta {
+    margin-left: auto;
   }
   .outrights-head:hover { background: #FFE0D0; }
   .outrights-panel.is-open .outrights-head {
@@ -539,6 +578,7 @@
   <div class="outrights-panel" id="outrightsPanel">
     <div class="outrights-head" id="outrightsHead">
       <span class="outrights-title">Tournament winner odds</span>
+      <div class="outrights-inline-chips" id="outrightsInlineChips"></div>
       <span class="outrights-meta" id="outrightsMeta">Loading…</span>
     </div>
     <div class="outrights-body" id="outrightsBody"></div>
@@ -1550,13 +1590,27 @@ function updateStatusStrip() {
 function renderOutrights() {
   const meta = document.getElementById('outrightsMeta');
   const body = document.getElementById('outrightsBody');
+  const inlineChips = document.getElementById('outrightsInlineChips');
   const o = LIVE.outrights;
   if (o.error || !o.teams.length) {
     meta.textContent = o.error ? 'Unavailable' : 'No market yet';
     body.innerHTML = '<div class="outrights-empty">Outright tournament-winner odds will appear here once UK bookmakers publish a market.</div>';
+    if (inlineChips) inlineChips.innerHTML = '';
     return;
   }
   meta.textContent = `Updated ${ageLabel(o.updated)} · best of UK books`;
+  // Inline summary of the top three favourites in the collapsed header.
+  if (inlineChips) {
+    const top3 = o.teams.slice(0, 3);
+    inlineChips.innerHTML = top3.map((t, i) => `
+      <span class="outright-inline-chip" title="${t.bookmaker}">
+        <span class="inline-rank">#${i + 1}</span>
+        <span class="inline-team">${t.team}</span>
+        <span class="inline-price">${Number(t.bestPrice).toFixed(2)}</span>
+      </span>
+    `).join('');
+  }
+  // Full top 10 in the expanded body.
   const top = o.teams.slice(0, 10);
   body.innerHTML = `
     <div class="outrights-grid">
