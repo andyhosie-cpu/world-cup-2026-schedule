@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Northell World Cup 2026 Sweepstake</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #1a1a1a;
+    background: #fafafa;
+  }
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 20px 24px 60px;
+  }
+
+  /* Title block */
+  .title-block {
+    padding: 24px 0 20px;
+    border-bottom: 3px solid #FF4500;
+    margin-bottom: 24px;
+  }
+  .title-block h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #111;
+    margin: 0 0 4px;
+  }
+  .title-block .subtitle {
+    font-size: 14px;
+    color: #555;
+    margin: 0 0 10px;
+    font-weight: 400;
+  }
+  .title-block .meta {
+    font-size: 11px;
+    color: #888;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .title-block .meta strong { color: #555; font-weight: 600; }
+  .title-block .meta a { color: #FF4500; text-decoration: none; font-weight: 600; }
+  .title-block .meta a:hover { text-decoration: underline; }
+
+  /* Card */
+  .card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .card-head {
+    padding: 12px 16px;
+    background: #FFF5F0;
+    border-bottom: 1px solid #FFE0D0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #FF4500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .card-count {
+    font-size: 11px;
+    color: #888;
+    font-weight: 500;
+  }
+  .card-body {
+    padding: 14px 16px;
+  }
+
+  /* Rules */
+  .rules-card .card-body { padding: 14px 18px; }
+  .rules-card ol {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 12px;
+    color: #333;
+  }
+  .rules-card li { margin-bottom: 4px; }
+  .rules-card li strong { color: #1a1a1a; }
+
+  /* Two-column layout */
+  .grid-two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 880px) {
+    .grid-two { grid-template-columns: 1fr; }
+  }
+
+  /* Team list */
+  .team-list, .employee-list {
+    max-height: 540px;
+    overflow-y: auto;
+  }
+  .team-row {
+    display: grid;
+    grid-template-columns: 34px 1fr 60px;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 14px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 12px;
+  }
+  .team-row:last-child { border-bottom: none; }
+  .team-row .team-rank {
+    color: #999;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: right;
+  }
+  .team-row .team-name {
+    color: #111;
+    font-weight: 600;
+  }
+  .team-row .team-price {
+    color: #FF4500;
+    font-weight: 700;
+    text-align: right;
+  }
+  .team-row.is-assigned {
+    background: #FAFAFA;
+    color: #888;
+  }
+  .team-row.is-assigned .team-name {
+    text-decoration: line-through;
+    color: #888;
+  }
+  .team-row.is-assigned .team-price {
+    color: #999;
+  }
+  .team-row .team-owner {
+    grid-column: 1 / -1;
+    margin-top: 2px;
+    margin-left: 44px;
+    font-size: 10px;
+    color: #FF4500;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .team-row .team-owner::before {
+    content: '→ ';
+    color: #888;
+  }
+
+  /* Employee list */
+  .employee-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    padding: 7px 14px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 12px;
+    align-items: center;
+  }
+  .employee-row:last-child { border-bottom: none; }
+  .employee-row .employee-name {
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .employee-row.is-assigned {
+    background: #FFF5F0;
+  }
+  .employee-row.is-assigned .employee-name {
+    color: #1a1a1a;
+  }
+  .employee-row .employee-team {
+    font-size: 11px;
+    color: #FF4500;
+    font-weight: 700;
+  }
+  .employee-row .employee-team .price {
+    color: #555;
+    font-weight: 500;
+    margin-left: 4px;
+  }
+
+  /* Draw card */
+  .draw-card .card-head {
+    background: #fff;
+    border-bottom: 2px solid #FF4500;
+  }
+  .draw-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.12s;
+    border: 1px solid transparent;
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary {
+    background: #FF4500;
+    color: #fff;
+    border-color: #FF4500;
+  }
+  .btn-primary:not(:disabled):hover { background: #e03d00; }
+  .btn-secondary {
+    background: #fff;
+    color: #FF4500;
+    border-color: #FF4500;
+  }
+  .btn-secondary:not(:disabled):hover { background: #FFF5F0; }
+  .btn-tertiary {
+    background: #fff;
+    color: #555;
+    border-color: #d9d9d9;
+  }
+  .btn-tertiary:not(:disabled):hover { border-color: #999; }
+
+  .draw-status {
+    padding: 14px 16px;
+    font-size: 12px;
+    color: #555;
+    background: #fafafa;
+    border-bottom: 1px solid #eee;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .draw-status .pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: #FF4500;
+    border-radius: 50%;
+    animation: pulse 0.9s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.35); }
+  }
+  .draw-status.is-live { background: #FEE2E2; color: #B91C1C; font-weight: 600; }
+  .draw-status.is-done { background: #DCFCE7; color: #166534; font-weight: 600; }
+
+  .draw-results { padding: 14px 16px; }
+  .mode-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+  }
+  .mode-badge.mode-dry { background: #eee; color: #555; }
+  .mode-badge.mode-live { background: #DCFCE7; color: #166534; }
+
+  .results-table {
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .results-head {
+    display: grid;
+    grid-template-columns: 50px 1.4fr 1fr 1.1fr;
+    gap: 10px;
+    padding: 8px 12px;
+    background: #FFE0D0;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #333;
+  }
+  .result-row {
+    display: grid;
+    grid-template-columns: 50px 1.4fr 1fr 1.1fr;
+    gap: 10px;
+    padding: 8px 12px;
+    border-top: 1px solid #f0f0f0;
+    font-size: 12px;
+    align-items: center;
+    animation: slideIn 0.32s ease-out;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .result-row:nth-child(even) { background: #fafafa; }
+  .result-row .r-num { color: #888; font-size: 10px; font-weight: 600; }
+  .result-row .r-employee { font-weight: 600; }
+  .result-row .r-team { color: #FF4500; font-weight: 700; }
+  .result-row .r-price { color: #333; font-size: 11px; }
+  .result-row .r-price .bm { color: #888; font-size: 10px; margin-left: 4px; }
+  .result-row.is-leftover {
+    background: #FFF8F4 !important;
+    border-top: 2px solid #FF4500;
+  }
+  .result-row.is-leftover .r-employee {
+    color: #FF4500;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .post-draw {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .post-draw .hint {
+    font-size: 10px;
+    color: #888;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  /* JSON box for committing the live draw */
+  .json-output {
+    display: none;
+    margin-top: 12px;
+    padding: 10px;
+    background: #1a1a1a;
+    color: #DCFCE7;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 10px;
+    max-height: 280px;
+    overflow: auto;
+    white-space: pre;
+  }
+  .json-output.is-shown { display: block; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="title-block">
+    <h1>Northell World Cup 2026 Sweepstake</h1>
+    <p class="subtitle">48 teams · 47 employees · live draw before the tournament kicks off on 11 June 2026</p>
+    <div class="meta">
+      <span><strong>Status:</strong> <span id="headerStatus">awaiting draw</span></span>
+      <a href="/">← back to fixture schedule</a>
+    </div>
+  </div>
+
+  <div class="card rules-card">
+    <div class="card-head"><span class="card-title">How it works</span></div>
+    <div class="card-body">
+      <ol>
+        <li>The draw runs <strong>one name at a time</strong> for drama. A name is picked at random, then a team is picked at random from the remaining pool.</li>
+        <li>The same team cannot be drawn twice. Each employee gets one team.</li>
+        <li>With 48 teams and 47 employees, <strong>one team is left over</strong>. The mechanic for that team is TBC and will be announced before the live draw.</li>
+        <li>Team odds shown are the <strong>best UK bookmaker prices</strong> right now (updated every page load) so you know your team's real chance of winning.</li>
+        <li>A <strong>dry run</strong> can be re-rolled freely. The <strong>live draw</strong> is one-shot and gets locked in.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="grid-two">
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">Teams &amp; winning odds</span>
+        <span class="card-count" id="teamCount">loading…</span>
+      </div>
+      <div class="team-list" id="teamList">
+        <div class="card-body" style="color:#888; font-style:italic;">Fetching live odds…</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">Northell employees</span>
+        <span class="card-count" id="employeeCount">47</span>
+      </div>
+      <div class="employee-list" id="employeeList"></div>
+    </div>
+  </div>
+
+  <div class="card draw-card">
+    <div class="card-head">
+      <span class="card-title">The draw</span>
+      <div class="draw-controls">
+        <button class="btn btn-secondary" id="dryRunBtn">Dry run</button>
+        <button class="btn btn-primary" id="liveDrawBtn">Live draw</button>
+        <button class="btn btn-tertiary" id="resetBtn">Reset</button>
+      </div>
+    </div>
+    <div class="draw-status" id="drawStatus">Ready - press "Dry run" for a no-stakes preview.</div>
+    <div class="draw-results" id="drawResults"></div>
+  </div>
+
+</div>
+
+<script>
+// ============================================
+// Placeholder employee list - 47 names.
+// Replace this array with the real Northell roster before the live draw.
+// ============================================
+const EMPLOYEES = Array.from({length: 47}, (_, i) => `Employee ${String(i + 1).padStart(2, '0')}`);
+
+const STORAGE_KEY = 'northell-sweepstake-v1';
+const DRAW_TICK_DRY = 600;   // ms per name in dry run
+const DRAW_TICK_LIVE = 1800; // ms per name in live draw (more drama)
+
+let TEAMS = [];
+let drawState = {
+  running: false,
+  mode: null,      // 'dry' | 'live' | null
+  assignments: [], // [{employee, team, price, bookmaker}, ...]
+  leftover: null   // {team, price, bookmaker} for the 48th team
+};
+
+// ============================================
+// Init
+// ============================================
+async function init() {
+  await fetchOdds();
+  renderEmployees();
+  loadSavedDraw();
+  renderResults();
+  wireControls();
+  updateHeaderStatus();
+}
+
+async function fetchOdds() {
+  try {
+    const r = await fetch('/api/outrights');
+    const data = await r.json();
+    TEAMS = Array.isArray(data.teams) ? data.teams : [];
+  } catch (e) {
+    TEAMS = [];
+  }
+  renderTeams();
+}
+
+// ============================================
+// Rendering
+// ============================================
+function escHtml(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderTeams() {
+  const list = document.getElementById('teamList');
+  const count = document.getElementById('teamCount');
+  if (!TEAMS.length) {
+    list.innerHTML = '<div class="card-body" style="color:#888; font-style:italic;">Odds unavailable. Live odds will appear once the upstream provider has them.</div>';
+    count.textContent = '0';
+    return;
+  }
+  count.textContent = `${TEAMS.length} teams`;
+  const ownerByTeam = new Map(drawState.assignments.map(a => [a.team, a.employee]));
+  list.innerHTML = TEAMS.map((t, i) => {
+    const owner = ownerByTeam.get(t.team);
+    return `<div class="team-row ${owner ? 'is-assigned' : ''}">
+      <span class="team-rank">#${i + 1}</span>
+      <span class="team-name">${escHtml(t.team)}</span>
+      <span class="team-price" title="${escHtml(t.bookmaker || '')}">${Number(t.bestPrice).toFixed(2)}</span>
+      ${owner ? `<span class="team-owner">${escHtml(owner)}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderEmployees() {
+  const list = document.getElementById('employeeList');
+  const count = document.getElementById('employeeCount');
+  count.textContent = `${EMPLOYEES.length} employees`;
+  const teamByEmployee = new Map(drawState.assignments.map(a => [a.employee, a]));
+  list.innerHTML = EMPLOYEES.map(name => {
+    const a = teamByEmployee.get(name);
+    return `<div class="employee-row ${a ? 'is-assigned' : ''}">
+      <span class="employee-name">${escHtml(name)}</span>
+      ${a ? `<span class="employee-team">${escHtml(a.team)}<span class="price">${Number(a.price).toFixed(2)}</span></span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderResults() {
+  const wrap = document.getElementById('drawResults');
+  if (!drawState.assignments.length && !drawState.leftover) {
+    wrap.innerHTML = '<div style="color:#888; font-style:italic; font-size:11px;">No draw yet.</div>';
+    return;
+  }
+  const rows = drawState.assignments.map((a, i) => `
+    <div class="result-row">
+      <span class="r-num">#${i + 1}</span>
+      <span class="r-employee">${escHtml(a.employee)}</span>
+      <span class="r-team">${escHtml(a.team)}</span>
+      <span class="r-price">${Number(a.price).toFixed(2)}<span class="bm">${escHtml(a.bookmaker || '')}</span></span>
+    </div>
+  `).join('');
+  const leftover = drawState.leftover ? `
+    <div class="result-row is-leftover">
+      <span class="r-num">↳</span>
+      <span class="r-employee">Leftover · TBC</span>
+      <span class="r-team">${escHtml(drawState.leftover.team)}</span>
+      <span class="r-price">${Number(drawState.leftover.price).toFixed(2)}<span class="bm">${escHtml(drawState.leftover.bookmaker || '')}</span></span>
+    </div>
+  ` : '';
+  const modeBadge = drawState.mode === 'live'
+    ? '<span class="mode-badge mode-live">Live draw locked</span>'
+    : drawState.mode === 'dry'
+      ? '<span class="mode-badge mode-dry">Dry run · not committed</span>'
+      : '';
+  const postDraw = !drawState.running ? `
+    <div class="post-draw">
+      ${drawState.mode === 'live'
+        ? '<button class="btn btn-secondary" id="copyJsonBtn">Copy JSON to commit</button><span class="hint">Hand the JSON to whoever maintains the deploy so the result is baked in for everyone.</span>'
+        : '<span class="hint">Re-roll with "Dry run" until you are happy, then press "Live draw" to lock it in.</span>'
+      }
+      <div class="json-output" id="jsonOutput"></div>
+    </div>
+  ` : '';
+  wrap.innerHTML = `${modeBadge}<div class="results-table"><div class="results-head"><span>#</span><span>Employee</span><span>Team</span><span>Best price</span></div>${rows}${leftover}</div>${postDraw}`;
+  wirePostDrawControls();
+  renderTeams();
+  renderEmployees();
+}
+
+function updateHeaderStatus() {
+  const el = document.getElementById('headerStatus');
+  if (!el) return;
+  if (drawState.mode === 'live') {
+    el.textContent = 'live draw complete';
+    el.style.color = '#166534';
+    el.style.fontWeight = '600';
+  } else if (drawState.mode === 'dry') {
+    el.textContent = 'dry run shown · live draw pending';
+    el.style.color = '#555';
+  } else {
+    el.textContent = 'awaiting draw';
+    el.style.color = '#888';
+  }
+}
+
+// ============================================
+// Draw mechanic
+// ============================================
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+async function runDraw(mode) {
+  if (drawState.running) return;
+  if (!TEAMS.length) {
+    setStatus('Cannot draw - odds are not loaded yet.', 'error');
+    return;
+  }
+  if (EMPLOYEES.length === 0) {
+    setStatus('Cannot draw - employee list is empty.', 'error');
+    return;
+  }
+  if (mode === 'live' && drawState.mode === 'live') {
+    if (!confirm('A live draw is already locked in. Overwrite it?')) return;
+  }
+  if (mode === 'live') {
+    if (!confirm(`LIVE DRAW.\n\nThis will pick teams for all ${EMPLOYEES.length} employees one at a time, saving as it goes. The dry run cannot be re-rolled after this.\n\nProceed?`)) return;
+  }
+
+  drawState = { running: true, mode, assignments: [], leftover: null };
+  setControlsDisabled(true);
+  setStatus(mode === 'live' ? 'LIVE DRAW in progress…' : 'Dry run in progress…', mode === 'live' ? 'live' : 'progress');
+  updateHeaderStatus();
+  renderResults();
+
+  const shuffledEmployees = shuffle(EMPLOYEES);
+  const shuffledTeams = shuffle(TEAMS);
+  const tick = mode === 'live' ? DRAW_TICK_LIVE : DRAW_TICK_DRY;
+
+  for (let i = 0; i < shuffledEmployees.length; i++) {
+    const emp = shuffledEmployees[i];
+    const t = shuffledTeams[i];
+    drawState.assignments.push({
+      employee: emp,
+      team: t.team,
+      price: Number(t.bestPrice),
+      bookmaker: t.bookmaker || ''
+    });
+    if (mode === 'live') saveLocal();
+    setStatus(`Drawing ${i + 1} of ${shuffledEmployees.length}: ${emp} → ${t.team} @ ${Number(t.bestPrice).toFixed(2)}`, mode === 'live' ? 'live' : 'progress');
+    renderResults();
+    await sleep(tick);
+  }
+  // Leftover team
+  if (shuffledTeams.length > shuffledEmployees.length) {
+    const lt = shuffledTeams[shuffledEmployees.length];
+    drawState.leftover = { team: lt.team, price: Number(lt.bestPrice), bookmaker: lt.bookmaker || '' };
+  }
+  drawState.running = false;
+  if (mode === 'live') saveLocal();
+  setControlsDisabled(false);
+  setStatus(mode === 'live' ? 'Live draw complete and saved.' : 'Dry run complete. Press "Dry run" to re-roll, or "Live draw" to commit.', 'done');
+  updateHeaderStatus();
+  renderResults();
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function setStatus(text, kind) {
+  const el = document.getElementById('drawStatus');
+  el.className = 'draw-status';
+  if (kind === 'live')     el.classList.add('is-live');
+  if (kind === 'progress') el.classList.add('is-live');
+  if (kind === 'done')     el.classList.add('is-done');
+  const dot = (kind === 'live' || kind === 'progress') ? '<span class="pulse-dot"></span>' : '';
+  el.innerHTML = `${dot}<span>${escHtml(text)}</span>`;
+}
+
+function setControlsDisabled(disabled) {
+  document.getElementById('dryRunBtn').disabled = disabled;
+  document.getElementById('liveDrawBtn').disabled = disabled;
+  document.getElementById('resetBtn').disabled = disabled;
+}
+
+// ============================================
+// Persistence
+// ============================================
+function saveLocal() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    mode: drawState.mode,
+    assignments: drawState.assignments,
+    leftover: drawState.leftover,
+    timestamp: new Date().toISOString()
+  }));
+}
+
+function loadSavedDraw() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data && Array.isArray(data.assignments)) {
+      drawState = {
+        running: false,
+        mode: data.mode || 'live',
+        assignments: data.assignments,
+        leftover: data.leftover || null
+      };
+    }
+  } catch (e) {}
+}
+
+function resetDraw() {
+  if (drawState.mode === 'live') {
+    if (!confirm('This will clear the saved live draw on this device. Continue?')) return;
+  }
+  localStorage.removeItem(STORAGE_KEY);
+  drawState = { running: false, mode: null, assignments: [], leftover: null };
+  setStatus('Ready - press "Dry run" for a no-stakes preview.', 'idle');
+  updateHeaderStatus();
+  renderResults();
+  renderTeams();
+  renderEmployees();
+}
+
+// ============================================
+// Controls
+// ============================================
+function wireControls() {
+  document.getElementById('dryRunBtn').addEventListener('click', () => runDraw('dry'));
+  document.getElementById('liveDrawBtn').addEventListener('click', () => runDraw('live'));
+  document.getElementById('resetBtn').addEventListener('click', resetDraw);
+}
+
+function wirePostDrawControls() {
+  const btn = document.getElementById('copyJsonBtn');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    const out = document.getElementById('jsonOutput');
+    const json = JSON.stringify({
+      mode: drawState.mode,
+      timestamp: new Date().toISOString(),
+      assignments: drawState.assignments,
+      leftover: drawState.leftover
+    }, null, 2);
+    out.textContent = json;
+    out.classList.add('is-shown');
+    try {
+      await navigator.clipboard.writeText(json);
+      btn.textContent = 'Copied ✓';
+      setTimeout(() => { btn.textContent = 'Copy JSON to commit'; }, 1500);
+    } catch (e) {
+      btn.textContent = 'Select + copy from box below';
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
