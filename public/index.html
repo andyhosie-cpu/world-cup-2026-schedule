@@ -992,12 +992,31 @@ function shiftDate(dateStr, deltaDays) {
 function stripDiacritics(s) {
   return s.normalize("NFD").replace(/[̀-ͯ]/g, "");
 }
-function searchNorm(s) {
+function basicNorm(s) {
   if (!s) return "";
-  const lower = stripDiacritics(String(s).trim().toLowerCase()).replace(/\s*&\s*/g, " and ");
-  // If the query exactly matches an alias (e.g. "turkey"), use its canonical
-  // form so it lines up with team names.
-  return NAME_MAP[lower] ? stripDiacritics(NAME_MAP[lower]) : lower;
+  return stripDiacritics(String(s).trim().toLowerCase()).replace(/\s*&\s*/g, " and ");
+}
+// Reverse index of NAME_MAP so a haystack like "USA" (basic="usa") can find
+// queries like "united states" that map TO it, not just FROM it.
+const NAME_REVERSE = {};
+for (const [k, v] of Object.entries(NAME_MAP)) {
+  const sv = stripDiacritics(v);
+  if (!NAME_REVERSE[sv]) NAME_REVERSE[sv] = new Set();
+  if (k !== sv) NAME_REVERSE[sv].add(k);
+}
+// All alternate spellings of a basic-normalised string. May include the
+// canonical form it maps TO (forward) and any alternative names that map TO
+// it (reverse). Never includes the basic form itself.
+function aliasForms(basic) {
+  const forms = new Set();
+  const direct = NAME_MAP[basic];
+  if (direct) {
+    const stripped = stripDiacritics(direct);
+    if (stripped !== basic) forms.add(stripped);
+  }
+  const rev = NAME_REVERSE[basic];
+  if (rev) for (const r of rev) forms.add(r);
+  return [...forms];
 }
 function levenshtein(a, b) {
   if (a === b) return 0;
@@ -1018,23 +1037,27 @@ function levenshtein(a, b) {
   }
   return dp[b.length];
 }
-// Returns true if needle is a substring of haystack, or a close-enough
-// fuzzy match (sliding window + whole-string distance) once the query is
-// at least 4 characters long.
+// Returns true if needle is a substring of haystack or a close-enough fuzzy
+// match. Short queries (<5 chars) are substring-only to avoid false positives
+// like "cape" matching "BC Place". The sliding window only kicks in for
+// queries of 6+ chars where the signal-to-noise ratio is high enough to spot
+// typos like "metlfie" -> "MetLife".
 function fuzzyMatch(haystackNorm, needleNorm) {
   if (!needleNorm) return true;
   if (haystackNorm.includes(needleNorm)) return true;
-  if (needleNorm.length < 4) return false;
-  const tol = Math.floor(needleNorm.length / 4) + 1;
-  // Whole-string distance (good for "turkey" vs "turkiye", "soctland" vs "scotland")
+  if (needleNorm.length < 5) return false;
+  const tol = needleNorm.length <= 8 ? 2 : 3;
+  // Whole-string distance ("turkey" vs "turkiye", "soctland" vs "scotland")
   if (Math.abs(haystackNorm.length - needleNorm.length) <= tol) {
     if (levenshtein(haystackNorm, needleNorm) <= tol) return true;
   }
-  // Sliding window distance (handles typos inside a longer name)
-  const len = needleNorm.length;
-  for (let i = 0; i <= haystackNorm.length - len; i++) {
-    const window = haystackNorm.substr(i, len);
-    if (levenshtein(window, needleNorm) <= tol) return true;
+  // Sliding window for typos inside longer venue/team names ("metlfie" inside
+  // "metlife stadium"). Only attempted when the query is long enough.
+  if (needleNorm.length >= 6) {
+    const len = needleNorm.length;
+    for (let i = 0; i <= haystackNorm.length - len; i++) {
+      if (levenshtein(haystackNorm.substr(i, len), needleNorm) <= tol) return true;
+    }
   }
   return false;
 }
@@ -1158,17 +1181,28 @@ const state = {
   expandAll: false
 };
 
+// Match a query against a single text term, checking the term's literal
+// stripped form AND its alias form (so "ivory" finds Côte d'Ivoire).
+function termMatches(text, qBasic) {
+  const b = basicNorm(text);
+  if (fuzzyMatch(b, qBasic)) return true;
+  for (const form of aliasForms(b)) {
+    if (fuzzyMatch(form, qBasic)) return true;
+  }
+  return false;
+}
+
 function applyFilters() {
   let out = MATCHES.slice();
   const rawQ = state.search.trim();
-  const q = searchNorm(rawQ);
+  const q = basicNorm(rawQ);
   if (q) {
     out = out.filter(m => {
       const baseMatch =
-        fuzzyMatch(searchNorm(m.t1), q) ||
-        fuzzyMatch(searchNorm(m.t2), q) ||
-        fuzzyMatch(searchNorm(m.venue), q) ||
-        fuzzyMatch(searchNorm(m.city), q) ||
+        termMatches(m.t1, q) ||
+        termMatches(m.t2, q) ||
+        termMatches(m.venue, q) ||
+        termMatches(m.city, q) ||
         // Stage codes stay exact-match (3-letter codes are too short to fuzz)
         (STAGE_LABEL[m.stage]||"").toLowerCase().includes(rawQ.toLowerCase());
       if (baseMatch) return true;
@@ -1176,8 +1210,8 @@ function applyFilters() {
       if (m.stage.length > 1) {
         const pt = possibleTeamsFor(m.num);
         if (pt) {
-          return pt.side1.some(t => fuzzyMatch(searchNorm(t), q)) ||
-                 pt.side2.some(t => fuzzyMatch(searchNorm(t), q));
+          return pt.side1.some(t => termMatches(t, q)) ||
+                 pt.side2.some(t => termMatches(t, q));
         }
       }
       return false;
