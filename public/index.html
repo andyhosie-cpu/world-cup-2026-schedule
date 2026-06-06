@@ -945,6 +945,7 @@ function fmtDate(dateStr) {
 const NAME_MAP = {
   "united states": "usa",
   "turkey": "türkiye",
+  "turkiye": "türkiye",
   "korea republic": "south korea",
   "republic of korea": "south korea",
   "czech republic": "czechia",
@@ -955,11 +956,15 @@ const NAME_MAP = {
   "cabo verde": "cape verde",
   "dr congo": "dr congo",
   "democratic republic of the congo": "dr congo",
-  "congo dr": "dr congo"
+  "congo dr": "dr congo",
+  "bosnia & herzegovina": "bosnia and herzegovina",
+  "bosnia and herzegovina": "bosnia and herzegovina",
+  "curacao": "curaçao",
+  "curaçao": "curaçao"
 };
 function normaliseTeam(raw) {
   if (!raw) return "";
-  const lower = String(raw).trim().toLowerCase();
+  const lower = String(raw).trim().toLowerCase().replace(/\s*&\s*/g, " and ");
   return NAME_MAP[lower] || lower;
 }
 function joinKeyFor(match) {

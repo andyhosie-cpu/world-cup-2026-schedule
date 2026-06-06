@@ -16,22 +16,30 @@ const ODDS_API_BASE = 'https://api.the-odds-api.com/v4';
 const NAME_MAP = {
   'united states': 'usa',
   'turkey': 'türkiye',
+  'turkiye': 'türkiye',
   'korea republic': 'south korea',
   'republic of korea': 'south korea',
   'czech republic': 'czechia',
   "côte d'ivoire": 'ivory coast',
-  'cote d\'ivoire': 'ivory coast',
+  "cote d'ivoire": 'ivory coast',
   'ivory coast': 'ivory coast',
   'cape verde': 'cape verde',
   'cabo verde': 'cape verde',
   'dr congo': 'dr congo',
   'democratic republic of the congo': 'dr congo',
   'congo dr': 'dr congo',
+  // Bosnia & Herzegovina vs Bosnia and Herzegovina - upstream uses ampersand
+  'bosnia & herzegovina': 'bosnia and herzegovina',
+  'bosnia and herzegovina': 'bosnia and herzegovina',
+  // Curaçao often shows up without the cedilla upstream
+  'curacao': 'curaçao',
+  'curaçao': 'curaçao',
 };
 
 export function normaliseTeam(raw) {
   if (!raw) return '';
-  const lower = String(raw).trim().toLowerCase();
+  // Lowercase, trim, and collapse "&" to "and" so the lookup is forgiving.
+  const lower = String(raw).trim().toLowerCase().replace(/\s*&\s*/g, ' and ');
   return NAME_MAP[lower] || lower;
 }
 
@@ -108,19 +116,38 @@ export async function oddsFetch(path, params = {}) {
 export async function discoverSportKeys() {
   return withCache('sport-keys', 12 * 3600, async () => {
     const { data } = await oddsFetch('/sports', { all: 'true' });
+    // Limit to active soccer sports whose title mentions "world cup".
+    // Drop qualifiers, the women's tournament, and the recently-completed
+    // Club World Cup - we want the men's FIFA World Cup itself.
     const candidates = data.filter((s) => {
       if (s.group !== 'Soccer') return false;
-      const blob = `${s.title || ''} ${s.description || ''}`.toLowerCase();
-      return blob.includes('world cup');
+      if (!s.active) return false;
+      const title = (s.title || '').toLowerCase();
+      if (!title.includes('world cup')) return false;
+      if (title.includes('qualifier')) return false;
+      if (title.includes('club')) return false;
+      if (title.includes('women')) return false;
+      return true;
     });
-    let matchKey = null;
-    let outrightsKey = null;
-    for (const c of candidates) {
-      if (c.has_outrights) {
-        if (!outrightsKey) outrightsKey = c.key;
-      } else {
-        if (!matchKey) matchKey = c.key;
-      }
+    // Within those, the outrights sport carries has_outrights=true; the
+    // fixture sport carries has_outrights=false. Prefer the exact title
+    // "FIFA World Cup" / "FIFA World Cup Winner" if present.
+    const exactMatch = candidates.find(
+      (c) => (c.title || '').toLowerCase() === 'fifa world cup',
+    );
+    const exactOutrights = candidates.find(
+      (c) => (c.title || '').toLowerCase() === 'fifa world cup winner',
+    );
+    let matchKey = exactMatch?.key || null;
+    let outrightsKey = exactOutrights?.key || null;
+    // Fallback: first matching candidate of each shape.
+    if (!matchKey) {
+      const c = candidates.find((c) => !c.has_outrights);
+      if (c) matchKey = c.key;
+    }
+    if (!outrightsKey) {
+      const c = candidates.find((c) => c.has_outrights);
+      if (c) outrightsKey = c.key;
     }
     return { matchKey, outrightsKey };
   });
