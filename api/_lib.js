@@ -46,12 +46,20 @@ export function normaliseTeam(raw) {
 /**
  * Build a join key: YYYY-MM-DD|teamA|teamB where teams are normalised and
  * sorted alphabetically so home/away order does not matter.
+ *
+ * The date component is the ET-local calendar date (UTC-4 in June/July 2026,
+ * EDT) so it lines up with the FIFA-published schedule the front-end uses.
+ * Without this, late-evening ET matches roll to the next UTC day and the
+ * front-end lookup misses.
  */
+const ET_OFFSET_MS = 4 * 60 * 60 * 1000;
+
 export function joinKey(commenceISO, homeTeam, awayTeam) {
-  const date = new Date(commenceISO);
-  const yyyy = date.getUTCFullYear();
-  const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const dd = String(date.getUTCDate()).padStart(2, '0');
+  const utc = new Date(commenceISO);
+  const et = new Date(utc.getTime() - ET_OFFSET_MS);
+  const yyyy = et.getUTCFullYear();
+  const mm = String(et.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(et.getUTCDate()).padStart(2, '0');
   const dateStr = `${yyyy}-${mm}-${dd}`;
   const a = normaliseTeam(homeTeam);
   const b = normaliseTeam(awayTeam);
