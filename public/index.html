@@ -566,6 +566,26 @@
     font-style: italic;
     padding: 4px 0;
   }
+  .outrights-toggle {
+    text-align: center;
+    margin-top: 12px;
+  }
+  .outrights-toggle-btn {
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 6px 16px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    color: #555;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .outrights-toggle-btn:hover { border-color: #FF4500; color: #FF4500; }
+  .outrights-toggle-btn.active { background: #FF4500; color: #fff; border-color: #FF4500; }
 </style>
 </head>
 <body>
@@ -1649,6 +1669,8 @@ function updateStatusStrip() {
   qEl.textContent = quota != null ? `quota: ${quota} left` : '';
 }
 
+let outrightsShowAll = false;
+
 function renderOutrights() {
   const meta = document.getElementById('outrightsMeta');
   const body = document.getElementById('outrightsBody');
@@ -1672,11 +1694,20 @@ function renderOutrights() {
       </span>
     `).join('');
   }
-  // Full top 10 in the expanded body.
-  const top = o.teams.slice(0, 10);
+  // Expanded body. Default to top 10; an "Show all" button reveals the full
+  // field. Hides the toggle if there are fewer than 10 teams in the market.
+  const list = outrightsShowAll ? o.teams : o.teams.slice(0, 10);
+  const total = o.teams.length;
+  const toggle = total > 10 ? `
+    <div class="outrights-toggle">
+      <button class="outrights-toggle-btn${outrightsShowAll ? ' active' : ''}" id="outrightsAllBtn">
+        ${outrightsShowAll ? `Show top 10` : `Show all ${total} teams`}
+      </button>
+    </div>
+  ` : '';
   body.innerHTML = `
     <div class="outrights-grid">
-      ${top.map((t, i) => `
+      ${list.map((t, i) => `
         <div class="outright-card">
           <div class="rank">#${i + 1}</div>
           <div class="team">${t.team}</div>
@@ -1685,7 +1716,17 @@ function renderOutrights() {
         </div>
       `).join('')}
     </div>
+    ${toggle}
   `;
+  const allBtn = document.getElementById('outrightsAllBtn');
+  if (allBtn) {
+    allBtn.addEventListener('click', (e) => {
+      // Don't bubble to the panel header (which would collapse the panel)
+      e.stopPropagation();
+      outrightsShowAll = !outrightsShowAll;
+      renderOutrights();
+    });
+  }
 }
 
 // Outrights panel toggle
