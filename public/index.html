@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FIFA World Cup 2026 — Fixture &amp; Location Schedule</title>
+<title>FIFA World Cup 2026 — Fixtures, Locations, Odds and Results</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -526,7 +526,7 @@
 <div class="container">
 
   <div class="title-block">
-    <h1>FIFA World Cup 2026 — Fixture &amp; Location Schedule</h1>
+    <h1>FIFA World Cup 2026 — Fixtures, Locations, Odds and Results</h1>
     <p class="subtitle">All 104 matches across the USA, Canada and Mexico — filter by team, venue, stage, or date</p>
     <div class="meta">
       <span><strong>Tournament:</strong> 11 June – 19 July 2026</span>
@@ -968,13 +968,36 @@ function normaliseTeam(raw) {
   return NAME_MAP[lower] || lower;
 }
 function joinKeyFor(match) {
-  // match.date is already YYYY-MM-DD and represents the UTC calendar date
-  // of the kick-off. Server uses the UTC date of commence_time, which lines
-  // up with FIFA's published schedule date.
+  // match.date is already YYYY-MM-DD (FIFA's ET-local date). Server produces
+  // the same shape after converting commence_time UTC -> ET.
   const a = normaliseTeam(match.t1);
   const b = normaliseTeam(match.t2);
   const [first, second] = [a, b].sort();
   return `${match.date}|${first}|${second}`;
+}
+
+function shiftDate(dateStr, deltaDays) {
+  const [Y, M, D] = dateStr.split("-").map(Number);
+  const d = new Date(Date.UTC(Y, M - 1, D + deltaDays));
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function lookupForMatch(table, match) {
+  // Exact key, falling back to +/-1 day to absorb upstream date drift around
+  // midnight ET (some books publish a fixture under the next-day calendar).
+  const exact = joinKeyFor(match);
+  if (table[exact]) return table[exact];
+  const a = normaliseTeam(match.t1);
+  const b = normaliseTeam(match.t2);
+  const [first, second] = [a, b].sort();
+  for (const delta of [-1, 1]) {
+    const k = `${shiftDate(match.date, delta)}|${first}|${second}`;
+    if (table[k]) return table[k];
+  }
+  return null;
 }
 
 // ============================================
@@ -987,7 +1010,7 @@ const LIVE = {
 };
 
 function scoreHTML(match) {
-  const s = LIVE.scores.matches[joinKeyFor(match)];
+  const s = lookupForMatch(LIVE.scores.matches, match);
   // Default = original "vs" separator with no badge.
   if (!s) return { center: '<span class="vs">vs</span>', badge: '' };
   const home = s.homeScore != null ? s.homeScore : '';
@@ -1015,9 +1038,9 @@ function scoreHTML(match) {
 function oddsHTML(match) {
   // Only show odds for group-stage rows and when the match has not gone in-play
   // or finished. Knockout rows can opt in if odds happen to be published.
-  const s = LIVE.scores.matches[joinKeyFor(match)];
+  const s = lookupForMatch(LIVE.scores.matches, match);
   if (s && (s.status === 'LIVE' || s.status === 'FT')) return '';
-  const o = LIVE.odds.matches[joinKeyFor(match)];
+  const o = lookupForMatch(LIVE.odds.matches, match);
   if (!o || !o.best) return '';
   const home = o.best.home, draw = o.best.draw, away = o.best.away;
   // Map odds home/away back to this row's t1/t2
