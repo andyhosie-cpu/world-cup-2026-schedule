@@ -186,6 +186,13 @@
     color: #888;
     font-style: italic;
   }
+  .suggest-link {
+    color: #FF4500;
+    font-weight: 600;
+    text-decoration: none;
+    font-style: normal;
+  }
+  .suggest-link:hover { text-decoration: underline; }
   .match-num { color: #888; font-size: 11px; }
   .teams { font-weight: 600; color: #111; }
   .teams .vs { color: #888; font-weight: 400; margin: 0 5px; }
@@ -1078,10 +1085,10 @@ function levenshtein(a, b) {
   return dp[b.length];
 }
 // Returns true if needle is a substring of haystack or a close-enough fuzzy
-// match. Short queries (<5 chars) are substring-only to avoid false positives
-// like "cape" matching "BC Place". The sliding window only kicks in for
-// queries of 6+ chars where the signal-to-noise ratio is high enough to spot
-// typos like "metlfie" -> "MetLife".
+// match. Short queries (<5 chars) are substring-only. Sliding-window typo
+// matching only fires at WORD BOUNDARIES, otherwise "turkey" picks up "terrey"
+// inside "monterrey".
+const WORD_BOUNDARY = /[\s\-'/]/;
 function fuzzyMatch(haystackNorm, needleNorm) {
   if (!needleNorm) return true;
   if (haystackNorm.includes(needleNorm)) return true;
@@ -1091,15 +1098,53 @@ function fuzzyMatch(haystackNorm, needleNorm) {
   if (Math.abs(haystackNorm.length - needleNorm.length) <= tol) {
     if (levenshtein(haystackNorm, needleNorm) <= tol) return true;
   }
-  // Sliding window for typos inside longer venue/team names ("metlfie" inside
-  // "metlife stadium"). Only attempted when the query is long enough.
+  // Sliding window at word boundaries only. "metlfie" matches at start of
+  // "metlife stadium" (boundary at index 0). "azetca" matches at the space-
+  // delimited "azteca" inside "estadio azteca" (boundary at index 8).
   if (needleNorm.length >= 6) {
     const len = needleNorm.length;
     for (let i = 0; i <= haystackNorm.length - len; i++) {
+      if (i !== 0 && !WORD_BOUNDARY.test(haystackNorm[i - 1])) continue;
       if (levenshtein(haystackNorm.substr(i, len), needleNorm) <= tol) return true;
     }
   }
   return false;
+}
+
+// ============================================
+// "Did you mean...?" - best-guess suggestion when the user's query returns
+// nothing. Walks all teams, venues, cities and aliases and picks the closest
+// canonical term by edit distance.
+// ============================================
+function bestGuess(qBasic) {
+  if (!qBasic || qBasic.length < 4) return null;
+  const pool = new Set();
+  for (const m of MATCHES) {
+    if (m.t1) pool.add(m.t1);
+    if (m.t2) pool.add(m.t2);
+    if (m.venue) pool.add(m.venue);
+    if (m.city) pool.add(m.city);
+  }
+  // Include canonical aliases too so "germny" -> "Germany" works even if the
+  // canonical name only appears once in the fixture list.
+  for (const v of Object.values(NAME_MAP)) pool.add(v);
+  // Cap the acceptable distance based on query length so a 4-char typo
+  // doesn't lead to a completely unrelated suggestion.
+  const maxDist = qBasic.length <= 6 ? 2 : 3;
+  let best = null;
+  let bestDist = Infinity;
+  for (const cand of pool) {
+    const cb = basicNorm(cand);
+    if (cb === qBasic) return null; // already exact, no need to suggest
+    // Cheap length check before computing Levenshtein
+    if (Math.abs(cb.length - qBasic.length) > maxDist + 2) continue;
+    const d = levenshtein(cb, qBasic);
+    if (d < bestDist) {
+      bestDist = d;
+      best = cand;
+    }
+  }
+  return bestDist <= maxDist ? { text: best, distance: bestDist } : null;
 }
 
 function lookupForMatch(table, match) {
@@ -1305,8 +1350,25 @@ function render() {
   if (rows.length === 0) {
     const tr = document.createElement("tr");
     tr.className = "no-results";
-    tr.innerHTML = `<td colspan="7">No matches match those filters. Try clearing the search or resetting.</td>`;
+    let suggestionHtml = "";
+    const qBasic = basicNorm(state.search.trim());
+    const guess = bestGuess(qBasic);
+    if (guess) {
+      const safe = guess.text.replace(/"/g, "&quot;");
+      suggestionHtml = ` Did you mean <a href="#" class="suggest-link" data-suggest="${safe}">${guess.text}</a>?`;
+    }
+    tr.innerHTML = `<td colspan="7">No matches match those filters.${suggestionHtml} Or try clearing the search.</td>`;
     body.appendChild(tr);
+    // Wire the suggestion click to apply the suggested term as the search.
+    const link = tr.querySelector(".suggest-link");
+    if (link) {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        state.search = link.dataset.suggest;
+        document.getElementById("search").value = state.search;
+        render();
+      });
+    }
   } else {
     rows.forEach(m => {
       const tr = document.createElement("tr");
