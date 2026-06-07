@@ -150,12 +150,14 @@
     background: #fff;
     border: 1px solid #e5e5e5;
     border-radius: 6px;
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   table {
     width: 100%;
     border-collapse: collapse;
     font-size: 12px;
+    min-width: 760px;
   }
   thead th {
     background: #FFE0D0;
@@ -427,6 +429,74 @@
   .tv-badge.tv-itv1    { background: #FEE2E2; color: #B91C1C; }
   .tv-badge.tv-itv4    { background: #FEF3C7; color: #92400E; }
   .tv-empty { color: #BBB; font-size: 10px; font-style: italic; }
+
+  /* ============================================
+     Mobile / small-screen layout
+     - Title shrinks
+     - Filters collapse to a single column
+     - Fixture table becomes horizontally scrollable instead of squished
+     - Smaller padding/font everywhere
+     ============================================ */
+  @media (max-width: 600px) {
+    .container { padding: 14px 14px 40px; }
+    .title-block {
+      padding: 16px 0 14px;
+      margin-bottom: 16px;
+    }
+    .title-block h1 { font-size: 19px; line-height: 1.2; }
+    .title-block .subtitle { font-size: 12px; margin-bottom: 8px; }
+    .title-block .meta { font-size: 10px; gap: 8px 14px; }
+
+    .filters {
+      grid-template-columns: 1fr;
+      padding: 12px;
+      gap: 9px;
+    }
+    .reset-btn { margin-top: 2px; }
+
+    .stage-chips { gap: 5px; margin-bottom: 12px; }
+    .chip { font-size: 10px; padding: 5px 10px; }
+
+    .summary { padding: 8px 12px; font-size: 11px; }
+    .summary .extra { font-size: 10px; }
+
+    .status-strip { font-size: 9px; gap: 8px 12px; }
+
+    /* Outrights panel - already hides inline chips at 700px;
+       compact the header padding too on phones */
+    .outrights-head { padding: 9px 12px; gap: 10px; }
+    .outrights-title { font-size: 10px; }
+    .outrights-meta { font-size: 9px; }
+    .outrights-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .outright-card { padding: 7px 9px; }
+    .outright-card .team { font-size: 11px; }
+    .outright-card .price { font-size: 13px; }
+
+    /* Fixture table */
+    .toggle-row { margin-bottom: 6px; }
+    .toggle-btn { font-size: 9px; padding: 5px 10px; }
+    table { font-size: 11px; min-width: 760px; }
+    thead th { padding: 7px 7px; font-size: 9px; }
+    tbody td { padding: 6px 7px; }
+    /* Hint that the table can be swiped horizontally on phones */
+    .table-wrap { position: relative; }
+    .table-wrap::after {
+      content: 'swipe →';
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      font-size: 8px;
+      font-weight: 600;
+      color: #FF4500;
+      background: #FFF5F0;
+      padding: 2px 6px;
+      border-radius: 8px;
+      pointer-events: none;
+      opacity: 0.85;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+  }
 
   /* Status strip near summary bar */
   .status-strip {
