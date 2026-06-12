@@ -1360,6 +1360,24 @@ const LIVE = {
 let PERSISTED_RESULTS = {};
 let ODDS_BY_COMMENCE = {};
 let ELIMINATED = new Set();
+const ET_OFFSET_MS_LIVE = 4 * 60 * 60 * 1000;
+
+// Knockout-row team resolution: also hoisted because render() calls it on
+// every row from the moment the page loads, before any odds fetch completes.
+function expectedCommenceUTC(match) {
+  const [Y, M, D] = match.date.split('-').map(Number);
+  const [h, m] = match.timeET.split(':').map(Number);
+  const dt = new Date(Date.UTC(Y, M - 1, D, h, m));
+  return new Date(dt.getTime() + ET_OFFSET_MS_LIVE).toISOString();
+}
+function resolveTeams(match) {
+  if (match.stage.length === 1) return { t1: match.t1, t2: match.t2, resolved: true };
+  const live = ODDS_BY_COMMENCE[expectedCommenceUTC(match)];
+  if (live && live.homeTeam && live.awayTeam) {
+    return { t1: live.homeTeam, t2: live.awayTeam, resolved: true };
+  }
+  return { t1: match.t1, t2: match.t2, resolved: false };
+}
 
 function scoreHTML(match) {
   const s = lookupForMatch(LIVE.scores.matches, match);
@@ -1781,21 +1799,8 @@ function rebuildOddsByCommence() {
     if (m.commenceTime) ODDS_BY_COMMENCE[m.commenceTime] = m;
   }
 }
-const ET_OFFSET_MS_LIVE = 4 * 60 * 60 * 1000;
-function expectedCommenceUTC(match) {
-  const [Y, M, D] = match.date.split('-').map(Number);
-  const [h, m] = match.timeET.split(':').map(Number);
-  const dt = new Date(Date.UTC(Y, M - 1, D, h, m));
-  return new Date(dt.getTime() + ET_OFFSET_MS_LIVE).toISOString();
-}
-function resolveTeams(match) {
-  if (match.stage.length === 1) return { t1: match.t1, t2: match.t2, resolved: true };
-  const live = ODDS_BY_COMMENCE[expectedCommenceUTC(match)];
-  if (live && live.homeTeam && live.awayTeam) {
-    return { t1: live.homeTeam, t2: live.awayTeam, resolved: true };
-  }
-  return { t1: match.t1, t2: match.t2, resolved: false };
-}
+// (expectedCommenceUTC, resolveTeams and ET_OFFSET_MS_LIVE are hoisted
+// to the top of the live-data block.)
 
 // Eliminated-team tracking. For the "possible teams" expansion strikethrough.
 // (ELIMINATED is declared at the top with the other live-data globals.)
