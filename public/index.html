@@ -1355,6 +1355,12 @@ const LIVE = {
   outrights: { teams: [], updated: null, quotaRemaining: null, error: null }
 };
 
+// Hoisted up here so the first render() call (before any fetch resolves)
+// can read them without hitting the let temporal-dead-zone.
+let PERSISTED_RESULTS = {};
+let ODDS_BY_COMMENCE = {};
+let ELIMINATED = new Set();
+
 function scoreHTML(match) {
   const s = lookupForMatch(LIVE.scores.matches, match);
   // Default = original "vs" separator with no badge.
@@ -1753,7 +1759,7 @@ const STATUS_TICK_MS = 5 * 1000;         // 5s
 
 // Persistent results - committed daily by /api/ingest. Merged into the live
 // score lookup so historic results stay visible after the 3-day API window.
-let PERSISTED_RESULTS = {};
+// (PERSISTED_RESULTS is declared at the top with the other live-data globals.)
 async function fetchPersistedResults() {
   try {
     const r = await fetch('/results.json', { cache: 'no-store' });
@@ -1768,7 +1774,7 @@ async function fetchPersistedResults() {
 }
 
 // Commence-time -> upstream fixture index for knockout auto-fill.
-let ODDS_BY_COMMENCE = {};
+// (ODDS_BY_COMMENCE is declared at the top with the other live-data globals.)
 function rebuildOddsByCommence() {
   ODDS_BY_COMMENCE = {};
   for (const m of Object.values(LIVE.odds.matches || {})) {
@@ -1792,7 +1798,7 @@ function resolveTeams(match) {
 }
 
 // Eliminated-team tracking. For the "possible teams" expansion strikethrough.
-let ELIMINATED = new Set();
+// (ELIMINATED is declared at the top with the other live-data globals.)
 function recomputeEliminated() {
   ELIMINATED = new Set();
   // Group-stage: 4th-placed team is definitely eliminated once all 6 group
