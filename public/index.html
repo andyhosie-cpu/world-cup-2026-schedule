@@ -294,6 +294,13 @@
     background: #FFE0D0;
     color: #9A2F00;
   }
+  .team-chip.is-eliminated {
+    background: #f3f3f3;
+    color: #aaa;
+    text-decoration: line-through;
+    text-decoration-color: #c00;
+    text-decoration-thickness: 1.5px;
+  }
   .expand-note {
     grid-column: 1 / -1;
     font-size: 10px;
@@ -1573,9 +1580,12 @@ function render() {
       }
 
       const flag = `<span class="country-flag ${COUNTRY_CLASS[m.country]||""}">${COUNTRY_LABEL[m.country]||m.country}</span>`;
-      const sc = scoreHTML(m);
-      const oddsBlock = m.stage.length === 1 ? oddsHTML(m) : oddsHTML(m); // try for both; oddsHTML self-gates
-      const tvCh = tvChannelFor(m);
+      // Override placeholder knockout teams with real ones once published.
+      const rt = resolveTeams(m);
+      const displayMatch = rt.resolved ? { ...m, t1: rt.t1, t2: rt.t2 } : m;
+      const sc = scoreHTML(displayMatch);
+      const oddsBlock = oddsHTML(displayMatch); // self-gates by stage + status
+      const tvCh = tvChannelFor(displayMatch);
       const tvCell = tvCh
         ? `<span class="tv-badge ${tvBadgeClass(tvCh)}">${tvCh}</span>`
         : `<span class="tv-empty">TBC</span>`;
@@ -1587,7 +1597,7 @@ function render() {
           <div class="time-uk">${toBST(m.date, m.timeET)} BST</div>
         </td>
         <td><span class="stage-badge stage-${m.stage}">${STAGE_LABEL[m.stage]||m.stage}</span></td>
-        <td class="teams">${m.t1} ${sc.center} ${m.t2}${sc.badge}${oddsBlock}</td>
+        <td class="teams">${displayMatch.t1} ${sc.center} ${displayMatch.t2}${sc.badge}${oddsBlock}</td>
         <td class="venue">${m.venue}</td>
         <td class="city">${m.city} ${flag}</td>
         <td>${tvCell}</td>
@@ -1602,7 +1612,10 @@ function render() {
           // Highlight teams whose group is among the source groups so it's clear where they come from
           const grp = Object.keys(GROUPS).find(g => GROUPS[g].includes(t));
           const fromGrp = sourceGroups.includes(grp);
-          return `<span class="team-chip ${fromGrp ? "from-group" : ""}" title="Group ${grp}">${t} <span style="opacity:0.55; font-size:9px;">${grp}</span></span>`;
+          const elim = ELIMINATED.has(t);
+          const elimClass = elim ? " is-eliminated" : "";
+          const elimAttr = elim ? ' title="Eliminated"' : ` title="Group ${grp}"`;
+          return `<span class="team-chip ${fromGrp ? "from-group" : ""}${elimClass}"${elimAttr}>${t} <span style="opacity:0.55; font-size:9px;">${grp}</span></span>`;
         }).join("");
         const groupsTagS1 = pt.side1Groups.map(g => `Group ${g}`).join(" · ");
         const groupsTagS2 = pt.side2Groups.map(g => `Group ${g}`).join(" · ");
@@ -1738,6 +1751,97 @@ const POLL_SCORES_MS = 60 * 1000;        // 60s
 const POLL_ODDS_MS = 5 * 60 * 1000;      // 5min
 const STATUS_TICK_MS = 5 * 1000;         // 5s
 
+// Persistent results - committed daily by /api/ingest. Merged into the live
+// score lookup so historic results stay visible after the 3-day API window.
+let PERSISTED_RESULTS = {};
+async function fetchPersistedResults() {
+  try {
+    const r = await fetch('/results.json', { cache: 'no-store' });
+    if (!r.ok) return;
+    const data = await r.json();
+    PERSISTED_RESULTS = data.completed || {};
+    // Inject any keys not already present in the live window.
+    for (const [k, v] of Object.entries(PERSISTED_RESULTS)) {
+      if (!LIVE.scores.matches[k]) LIVE.scores.matches[k] = v;
+    }
+  } catch (e) { /* silent */ }
+}
+
+// Commence-time -> upstream fixture index for knockout auto-fill.
+let ODDS_BY_COMMENCE = {};
+function rebuildOddsByCommence() {
+  ODDS_BY_COMMENCE = {};
+  for (const m of Object.values(LIVE.odds.matches || {})) {
+    if (m.commenceTime) ODDS_BY_COMMENCE[m.commenceTime] = m;
+  }
+}
+const ET_OFFSET_MS_LIVE = 4 * 60 * 60 * 1000;
+function expectedCommenceUTC(match) {
+  const [Y, M, D] = match.date.split('-').map(Number);
+  const [h, m] = match.timeET.split(':').map(Number);
+  const dt = new Date(Date.UTC(Y, M - 1, D, h, m));
+  return new Date(dt.getTime() + ET_OFFSET_MS_LIVE).toISOString();
+}
+function resolveTeams(match) {
+  if (match.stage.length === 1) return { t1: match.t1, t2: match.t2, resolved: true };
+  const live = ODDS_BY_COMMENCE[expectedCommenceUTC(match)];
+  if (live && live.homeTeam && live.awayTeam) {
+    return { t1: live.homeTeam, t2: live.awayTeam, resolved: true };
+  }
+  return { t1: match.t1, t2: match.t2, resolved: false };
+}
+
+// Eliminated-team tracking. For the "possible teams" expansion strikethrough.
+let ELIMINATED = new Set();
+function recomputeEliminated() {
+  ELIMINATED = new Set();
+  // Group-stage: 4th-placed team is definitely eliminated once all 6 group
+  // matches are completed. 3rd-placed is tentative (best 8 of 12 advance);
+  // we don't strike them through to keep the bracket honest.
+  for (const [letter, teams] of Object.entries(GROUPS)) {
+    const standings = teams.map(t => ({ team: t, P:0, W:0, D:0, L:0, GF:0, GA:0, Pts:0 }));
+    let done = 0;
+    for (const mm of MATCHES) {
+      if (mm.stage !== letter) continue;
+      const key = joinKeyFor(mm);
+      const r = LIVE.scores.matches[key];
+      if (!r || !r.completed || r.homeScore == null || r.awayScore == null) continue;
+      done++;
+      const homeIsT1 = normaliseTeam(mm.t1) === normaliseTeam(r.homeTeam);
+      const t1 = +(homeIsT1 ? r.homeScore : r.awayScore);
+      const t2 = +(homeIsT1 ? r.awayScore : r.homeScore);
+      const s1 = standings.find(s => s.team === mm.t1);
+      const s2 = standings.find(s => s.team === mm.t2);
+      if (!s1 || !s2) continue;
+      s1.P++; s2.P++;
+      s1.GF += t1; s1.GA += t2;
+      s2.GF += t2; s2.GA += t1;
+      if (t1 > t2) { s1.W++; s1.Pts += 3; s2.L++; }
+      else if (t1 < t2) { s2.W++; s2.Pts += 3; s1.L++; }
+      else { s1.D++; s2.D++; s1.Pts++; s2.Pts++; }
+    }
+    if (done === 6) {
+      standings.sort((a, b) =>
+        (b.Pts - a.Pts) || ((b.GF - b.GA) - (a.GF - a.GA)) || (b.GF - a.GF));
+      ELIMINATED.add(standings[3].team);
+    }
+  }
+  // Knockout losers
+  for (const mm of MATCHES) {
+    if (mm.stage.length === 1) continue;
+    const rt = resolveTeams(mm);
+    if (!rt.resolved) continue;
+    const key = `${mm.date}|${[normaliseTeam(rt.t1), normaliseTeam(rt.t2)].sort().join('|')}`;
+    const r = LIVE.scores.matches[key];
+    if (!r || !r.completed || r.homeScore == null || r.awayScore == null) continue;
+    const homeIsT1 = normaliseTeam(rt.t1) === normaliseTeam(r.homeTeam);
+    const t1 = +(homeIsT1 ? r.homeScore : r.awayScore);
+    const t2 = +(homeIsT1 ? r.awayScore : r.homeScore);
+    if (t1 < t2) ELIMINATED.add(rt.t1);
+    else if (t2 < t1) ELIMINATED.add(rt.t2);
+  }
+}
+
 let scoresTimer = null;
 let oddsTimer = null;
 let statusTimer = null;
@@ -1764,6 +1868,11 @@ async function fetchScores() {
       error: payload.error
     };
   }
+  // Re-merge the persisted record so old matches stay in the score map.
+  for (const [k, v] of Object.entries(PERSISTED_RESULTS)) {
+    if (!LIVE.scores.matches[k]) LIVE.scores.matches[k] = v;
+  }
+  recomputeEliminated();
   updateStatusStrip();
   render();
 }
@@ -1780,6 +1889,8 @@ async function fetchOdds() {
       error: payload.error
     };
   }
+  rebuildOddsByCommence();
+  recomputeEliminated();
   updateStatusStrip();
   render();
 }
@@ -1898,7 +2009,9 @@ document.getElementById('outrightsHead').addEventListener('click', () => {
 });
 
 function startPolling() {
-  // Kick off immediately, then on interval
+  // One-shot fetch of the persisted record (no polling - it only refreshes
+  // when a new deploy lands), then the live endpoints kick off.
+  fetchPersistedResults().then(render);
   fetchScores();
   fetchOdds();
   fetchOutrights();

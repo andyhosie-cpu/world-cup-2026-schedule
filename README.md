@@ -38,8 +38,11 @@ Open http://localhost:3000 — the page loads, then within a second or two the s
 ```bash
 vercel deploy                              # first preview deploy, links the project
 vercel env add ODDS_API_KEY production     # paste the key when prompted
-vercel deploy --prod                       # production deploy that reads the env var
+vercel env add GITHUB_TOKEN production     # PAT with Contents: read+write on this repo (for the daily ingest cron)
+vercel deploy --prod                       # production deploy that reads the env vars
 ```
+
+The daily ingest cron at `/api/ingest` runs once a day (03:00 UTC) and commits any newly-completed match results to `public/results.json`. That commit triggers a redeploy so the persisted record stays in sync. The PAT can be a fine-grained token scoped to this single repo with Contents: read+write.
 
 If you link the GitHub repo to the Vercel project (via the dashboard or `vercel git connect`), future `git push` operations auto-deploy. No need to run `vercel deploy` manually after that.
 
