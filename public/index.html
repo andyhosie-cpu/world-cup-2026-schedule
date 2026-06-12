@@ -1468,7 +1468,7 @@ const state = {
   team: "",
   venue: "",
   stage: "",
-  sortKey: "num",
+  sortKey: "date",
   sortDir: 1,
   expanded: new Set(),
   expandAll: false
@@ -1714,7 +1714,7 @@ document.getElementById("stageFilter").addEventListener("change", e => {
 
 document.getElementById("resetBtn").addEventListener("click", () => {
   state.search = ""; state.team = ""; state.venue = ""; state.stage = "";
-  state.sortKey = "num"; state.sortDir = 1;
+  state.sortKey = "date"; state.sortDir = 1;
   state.expanded = new Set(); state.expandAll = false;
   document.getElementById("search").value = "";
   document.getElementById("teamFilter").value = "";
