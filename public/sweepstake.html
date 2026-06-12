@@ -416,10 +416,55 @@
 
 <script>
 // ============================================
-// Placeholder employee list - 45 names.
-// Replace this array with the real Northell roster before the live draw.
+// Northell roster - 45 names, order as supplied in "Northell Team.xlsx".
 // ============================================
-const EMPLOYEES = Array.from({length: 45}, (_, i) => `Employee ${String(i + 1).padStart(2, '0')}`);
+const EMPLOYEES = [
+  "Carl Bothma",
+  "Adam Hedib",
+  "Adrian Pass",
+  "Alexander Beardsall",
+  "Anand Davis",
+  "Andy Hosie",
+  "Anitha Murugan",
+  "Augustas Macys",
+  "Bartłomiej Fatyga",
+  "Christoph Rahmede",
+  "Clare Reaney",
+  "Damian Kulus",
+  "Dan Griffin",
+  "Daniel Harden",
+  "Daria Barbalata",
+  "Diogo Graca",
+  "Emma Dredge",
+  "Gonzalo Cruz",
+  "Guy Jehu",
+  "Harsh Dhakan",
+  "John Godwin",
+  "Jordan Jones",
+  "Kalin Kirev",
+  "Kanan Farzaliyev",
+  "Kevin Charecki",
+  "Kostiantyn Medvid",
+  "Levon Manukyan",
+  "Lillie Birchall",
+  "Nicholas Hayton",
+  "Nigel Charlton",
+  "Oli Adams",
+  "Oliver Harvey",
+  "Pawel Garbacz",
+  "Peter Verster",
+  "Rachel Mlota",
+  "Rita O'Toole",
+  "Rory Higgins",
+  "Ruhun De Silva",
+  "SJ Barton",
+  "Sergii Kalashnikov",
+  "Simon D'Urso",
+  "Slawek Kopacz",
+  "Stanislav Stratiev",
+  "Szczepan Kozal",
+  "Wim Hollebrandse",
+];
 
 const STORAGE_KEY = 'northell-sweepstake-v1';
 const DRAW_TICK_DRY = 3000;  // ms per name in dry run
