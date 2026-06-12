@@ -360,7 +360,7 @@
 
   <div class="title-block">
     <h1>Northell World Cup 2026 Sweepstake</h1>
-    <p class="subtitle">48 teams · 47 employees · live draw before the tournament kicks off on 11 June 2026</p>
+    <p class="subtitle">48 teams · 45 employees · 3 names get a second team in round 2 · live draw before the final</p>
     <div class="meta">
       <span><strong>Status:</strong> <span id="headerStatus">awaiting draw</span></span>
       <a href="/">← back to fixture schedule</a>
@@ -371,9 +371,9 @@
     <div class="card-head"><span class="card-title">How it works</span></div>
     <div class="card-body">
       <ol>
-        <li>The draw runs <strong>one name at a time</strong> for drama. A name is picked at random, then a team is picked at random from the remaining pool.</li>
-        <li>The same team cannot be drawn twice. Each employee gets one team.</li>
-        <li>With 48 teams and 47 employees, <strong>one team is left over</strong>. The mechanic for that team is TBC and will be announced before the live draw.</li>
+        <li>The draw runs <strong>one name at a time</strong> for drama. Employees are drawn in list order; a team is picked at random from the remaining pool.</li>
+        <li>The same team cannot be drawn twice in round 1. Each of the 45 employees gets one team.</li>
+        <li>Round 2: with 48 teams and 45 employees, <strong>3 teams are left over</strong>. Three names are then drawn at random from the 45 to receive a second team each.</li>
         <li>Team odds shown are the <strong>best UK bookmaker prices</strong> right now (updated every page load) so you know your team's real chance of winning.</li>
         <li>A <strong>dry run</strong> can be re-rolled freely. The <strong>live draw</strong> is one-shot and gets locked in.</li>
       </ol>
@@ -393,7 +393,7 @@
     <div class="card">
       <div class="card-head">
         <span class="card-title">Northell employees</span>
-        <span class="card-count" id="employeeCount">47</span>
+        <span class="card-count" id="employeeCount">45</span>
       </div>
       <div class="employee-list" id="employeeList"></div>
     </div>
@@ -416,10 +416,10 @@
 
 <script>
 // ============================================
-// Placeholder employee list - 47 names.
+// Placeholder employee list - 45 names.
 // Replace this array with the real Northell roster before the live draw.
 // ============================================
-const EMPLOYEES = Array.from({length: 47}, (_, i) => `Employee ${String(i + 1).padStart(2, '0')}`);
+const EMPLOYEES = Array.from({length: 45}, (_, i) => `Employee ${String(i + 1).padStart(2, '0')}`);
 
 const STORAGE_KEY = 'northell-sweepstake-v1';
 const DRAW_TICK_DRY = 3000;  // ms per name in dry run
@@ -429,8 +429,8 @@ let TEAMS = [];
 let drawState = {
   running: false,
   mode: null,      // 'dry' | 'live' | null
-  assignments: [], // [{employee, team, price, bookmaker}, ...]
-  leftover: null   // {team, price, bookmaker} for the 48th team
+  assignments: [], // [{employee, team, price, bookmaker}, ...] - round 1 (one each)
+  bonus: []        // [{employee, team, price, bookmaker}, ...] - round 2 (extras for 3 lucky names)
 };
 
 // ============================================
@@ -500,7 +500,8 @@ function renderEmployees() {
 
 function renderResults() {
   const wrap = document.getElementById('drawResults');
-  if (!drawState.assignments.length && !drawState.leftover) {
+  const bonusList = drawState.bonus || [];
+  if (!drawState.assignments.length && !bonusList.length) {
     wrap.innerHTML = '<div style="color:#888; font-style:italic; font-size:11px;">No draw yet.</div>';
     return;
   }
@@ -512,13 +513,19 @@ function renderResults() {
       <span class="r-price">${Number(a.price).toFixed(2)}<span class="bm">${escHtml(a.bookmaker || '')}</span></span>
     </div>
   `).join('');
-  const leftover = drawState.leftover ? `
-    <div class="result-row is-leftover">
+  const leftover = bonusList.length ? `
+    <div class="result-row is-leftover" style="grid-template-columns:50px 1fr; font-weight:700; padding-top:10px;">
       <span class="r-num">↳</span>
-      <span class="r-employee">Leftover · TBC</span>
-      <span class="r-team">${escHtml(drawState.leftover.team)}</span>
-      <span class="r-price">${Number(drawState.leftover.price).toFixed(2)}<span class="bm">${escHtml(drawState.leftover.bookmaker || '')}</span></span>
+      <span class="r-employee">Round 2 · bonus second team for ${bonusList.length} name${bonusList.length === 1 ? '' : 's'}</span>
     </div>
+    ${bonusList.map(b => `
+      <div class="result-row is-leftover">
+        <span class="r-num">+</span>
+        <span class="r-employee">${escHtml(b.employee)}</span>
+        <span class="r-team">${escHtml(b.team)}</span>
+        <span class="r-price">${Number(b.price).toFixed(2)}<span class="bm">${escHtml(b.bookmaker || '')}</span></span>
+      </div>
+    `).join('')}
   ` : '';
   const modeBadge = drawState.mode === 'live'
     ? '<span class="mode-badge mode-live">Live draw locked</span>'
@@ -585,20 +592,20 @@ async function runDraw(mode) {
     if (!confirm(`LIVE DRAW.\n\nThis will pick teams for all ${EMPLOYEES.length} employees one at a time, saving as it goes. The dry run cannot be re-rolled after this.\n\nProceed?`)) return;
   }
 
-  drawState = { running: true, mode, assignments: [], leftover: null };
+  drawState = { running: true, mode, assignments: [], bonus: [] };
   setControlsDisabled(true);
   setStatus(mode === 'live' ? 'LIVE DRAW in progress…' : 'Dry run in progress…', mode === 'live' ? 'live' : 'progress');
   updateHeaderStatus();
   renderResults();
 
-  // Employees go in list order (so viewers can follow along by name).
-  // Only the team pool is shuffled - which is statistically equivalent to
-  // shuffling both but easier to track on the call.
+  // Round 1: employees in list order, teams shuffled once. Statistically
+  // equivalent to shuffling both, easier to follow on the call.
   const orderedEmployees = EMPLOYEES.slice();
   const shuffledTeams = shuffle(TEAMS);
   const tick = mode === 'live' ? DRAW_TICK_LIVE : DRAW_TICK_DRY;
+  const round1Count = Math.min(orderedEmployees.length, shuffledTeams.length);
 
-  for (let i = 0; i < orderedEmployees.length; i++) {
+  for (let i = 0; i < round1Count; i++) {
     const emp = orderedEmployees[i];
     const t = shuffledTeams[i];
     drawState.assignments.push({
@@ -608,14 +615,32 @@ async function runDraw(mode) {
       bookmaker: t.bookmaker || ''
     });
     if (mode === 'live') saveLocal();
-    setStatus(`Drawing ${i + 1} of ${orderedEmployees.length}: ${emp} → ${t.team} @ ${Number(t.bestPrice).toFixed(2)}`, mode === 'live' ? 'live' : 'progress');
+    setStatus(`Round 1 · ${i + 1} of ${round1Count}: ${emp} → ${t.team} @ ${Number(t.bestPrice).toFixed(2)}`, mode === 'live' ? 'live' : 'progress');
     renderResults();
     await sleep(tick);
   }
-  // Leftover team
-  if (shuffledTeams.length > orderedEmployees.length) {
-    const lt = shuffledTeams[orderedEmployees.length];
-    drawState.leftover = { team: lt.team, price: Number(lt.bestPrice), bookmaker: lt.bookmaker || '' };
+
+  // Round 2: any teams left over get distributed to random employees who get
+  // a second team each. With 48 teams and 45 employees that's 3 lucky names.
+  const leftoverTeams = shuffledTeams.slice(round1Count);
+  if (leftoverTeams.length > 0) {
+    setStatus(`Round 2 begins: ${leftoverTeams.length} extra team${leftoverTeams.length === 1 ? '' : 's'} to be drawn…`, mode === 'live' ? 'live' : 'progress');
+    await sleep(Math.min(tick, 2000));
+    const shuffledNamesForBonus = shuffle(orderedEmployees).slice(0, leftoverTeams.length);
+    for (let i = 0; i < leftoverTeams.length; i++) {
+      const emp = shuffledNamesForBonus[i];
+      const t = leftoverTeams[i];
+      drawState.bonus.push({
+        employee: emp,
+        team: t.team,
+        price: Number(t.bestPrice),
+        bookmaker: t.bookmaker || ''
+      });
+      if (mode === 'live') saveLocal();
+      setStatus(`Round 2 · ${i + 1} of ${leftoverTeams.length}: ${emp} also draws ${t.team} @ ${Number(t.bestPrice).toFixed(2)}`, mode === 'live' ? 'live' : 'progress');
+      renderResults();
+      await sleep(tick);
+    }
   }
   drawState.running = false;
   if (mode === 'live') saveLocal();
@@ -650,7 +675,7 @@ function saveLocal() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
     mode: drawState.mode,
     assignments: drawState.assignments,
-    leftover: drawState.leftover,
+    bonus: drawState.bonus || [],
     timestamp: new Date().toISOString()
   }));
 }
@@ -665,7 +690,7 @@ function loadSavedDraw() {
         running: false,
         mode: data.mode || 'live',
         assignments: data.assignments,
-        leftover: data.leftover || null
+        bonus: data.bonus || (data.leftover ? [data.leftover] : [])
       };
     }
   } catch (e) {}
@@ -676,7 +701,7 @@ function resetDraw() {
     if (!confirm('This will clear the saved live draw on this device. Continue?')) return;
   }
   localStorage.removeItem(STORAGE_KEY);
-  drawState = { running: false, mode: null, assignments: [], leftover: null };
+  drawState = { running: false, mode: null, assignments: [], bonus: [] };
   setStatus('Ready - press "Dry run" for a no-stakes preview.', 'idle');
   updateHeaderStatus();
   renderResults();
@@ -702,7 +727,7 @@ function wirePostDrawControls() {
       mode: drawState.mode,
       timestamp: new Date().toISOString(),
       assignments: drawState.assignments,
-      leftover: drawState.leftover
+      bonus: drawState.bonus || []
     }, null, 2);
     out.textContent = json;
     out.classList.add('is-shown');
