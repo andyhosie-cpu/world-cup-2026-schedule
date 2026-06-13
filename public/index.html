@@ -1768,12 +1768,11 @@ render();
 
 // ============================================
 // Live data layer - scores, odds, outrights
-// All polling is silent: if a fetch fails the UI keeps working with
-// whatever data was previously cached. Status strip surfaces freshness.
+// Fetched ONCE per page load (no polling/auto-refresh) to keep Odds API
+// credit usage minimal. To see fresher scores or odds the user reloads the
+// page. Fetches are silent: if one fails the UI keeps working with whatever
+// data is available, and the status strip surfaces freshness.
 // ============================================
-const POLL_SCORES_MS = 60 * 1000;        // 60s
-const POLL_ODDS_MS = 5 * 60 * 1000;      // 5min
-const STATUS_TICK_MS = 5 * 1000;         // 5s
 
 // Persistent results - committed daily by /api/ingest. Merged into the live
 // score lookup so historic results stay visible after the 3-day API window.
@@ -1852,10 +1851,6 @@ function recomputeEliminated() {
     else if (t2 < t1) ELIMINATED.add(rt.t2);
   }
 }
-
-let scoresTimer = null;
-let oddsTimer = null;
-let statusTimer = null;
 
 async function fetchJSON(path) {
   try {
@@ -2019,34 +2014,20 @@ document.getElementById('outrightsHead').addEventListener('click', () => {
   document.getElementById('outrightsPanel').classList.toggle('is-open');
 });
 
-function startPolling() {
-  // One-shot fetch of the persisted record (no polling - it only refreshes
-  // when a new deploy lands), then the live endpoints kick off.
+// One-shot load: fetch everything once when the page loads or is refreshed.
+// No setInterval / polling and no visibility-based refetch - each page view
+// triggers at most one round of fetches, so Odds API credits are only spent
+// when someone actually opens or reloads the page. The Vercel edge cache
+// (s-maxage on /api/*) further coalesces concurrent loads into few upstream
+// calls. To see updated data, reload the page.
+function loadLiveData() {
   fetchPersistedResults().then(render);
   fetchScores();
   fetchOdds();
   fetchOutrights();
-  scoresTimer = setInterval(fetchScores, POLL_SCORES_MS);
-  oddsTimer = setInterval(fetchOdds, POLL_ODDS_MS);
-  statusTimer = setInterval(updateStatusStrip, STATUS_TICK_MS);
-}
-function stopPolling() {
-  if (scoresTimer) clearInterval(scoresTimer);
-  if (oddsTimer) clearInterval(oddsTimer);
-  if (statusTimer) clearInterval(statusTimer);
-  scoresTimer = oddsTimer = statusTimer = null;
 }
 
-// Pause polling when the tab is hidden to be quota-friendly.
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    stopPolling();
-  } else if (!scoresTimer) {
-    startPolling();
-  }
-});
-
-startPolling();
+loadLiveData();
 </script>
 </body>
 </html>
