@@ -532,6 +532,20 @@
   .status-strip .stat-tag.stale::before { background: #f59e0b; }
   .status-strip .stat-tag.error::before { background: #ef4444; }
   .status-strip .quota { margin-left: auto; }
+  .status-strip .refresh-btn {
+    border: 1px solid #d4d4d4;
+    background: #fff;
+    color: #333;
+    font: inherit;
+    font-size: 10px;
+    line-height: 1;
+    padding: 4px 9px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background .15s, border-color .15s, opacity .15s;
+  }
+  .status-strip .refresh-btn:hover:not(:disabled) { background: #f3f4f6; border-color: #999; }
+  .status-strip .refresh-btn:disabled { opacity: .55; cursor: default; }
 
   /* Outrights panel */
   .outrights-panel {
@@ -767,6 +781,7 @@
   <div class="status-strip" id="statusStrip">
     <span class="stat-tag" id="scoresStat">Scores: loading…</span>
     <span class="stat-tag" id="oddsStat">Odds: loading…</span>
+    <button class="refresh-btn" id="refreshBtn" type="button">↻ Update scores &amp; odds</button>
     <span class="quota" id="quotaStat"></span>
   </div>
 
@@ -2026,6 +2041,40 @@ function loadLiveData() {
   fetchOdds();
   fetchOutrights();
 }
+
+// Manual refresh button: refetch live data on demand without a full page
+// reload, so filters / search / expanded rows are preserved. A 30s cooldown
+// caps Odds API credit use from repeated clicks; the countdown below is a
+// UI-only timer (it makes no API calls).
+const refreshBtn = document.getElementById('refreshBtn');
+const REFRESH_LABEL = '↻ Update scores & odds';
+const REFRESH_COOLDOWN_S = 30;
+let refreshBusy = false;
+
+async function manualRefresh() {
+  if (refreshBusy) return;
+  refreshBusy = true;
+  refreshBtn.disabled = true;
+  refreshBtn.textContent = 'Updating…';
+  try {
+    await Promise.all([fetchScores(), fetchOdds(), fetchOutrights()]);
+  } catch (e) { /* fetchers already degrade silently */ }
+  // Brief confirmation, then a visible cooldown countdown before re-arming.
+  let remaining = REFRESH_COOLDOWN_S;
+  refreshBtn.textContent = '✓ Updated';
+  const tick = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(tick);
+      refreshBusy = false;
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = REFRESH_LABEL;
+    } else {
+      refreshBtn.textContent = `Updated · wait ${remaining}s`;
+    }
+  }, 1000);
+}
+refreshBtn.addEventListener('click', manualRefresh);
 
 loadLiveData();
 </script>
