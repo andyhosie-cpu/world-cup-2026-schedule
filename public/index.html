@@ -1792,17 +1792,28 @@ render();
 // Persistent results - committed daily by /api/ingest. Merged into the live
 // score lookup so historic results stay visible after the 3-day API window.
 // (PERSISTED_RESULTS is declared at the top with the other live-data globals.)
+// The permanent results ledger is updated daily by a scheduled agent that
+// commits results.json straight to the repo's main branch. We read it from
+// the GitHub raw URL (CORS-enabled, ~5min CDN cache) so new finals appear
+// without needing a redeploy. Falls back to the deployed snapshot if raw is
+// unreachable, so the page always has at least the last-deployed results.
+const RESULTS_RAW_URL = 'https://raw.githubusercontent.com/andyhosie-cpu/world-cup-2026-schedule/main/public/results.json';
 async function fetchPersistedResults() {
-  try {
-    const r = await fetch('/results.json', { cache: 'no-store' });
-    if (!r.ok) return;
-    const data = await r.json();
-    PERSISTED_RESULTS = data.completed || {};
-    // Inject any keys not already present in the live window.
-    for (const [k, v] of Object.entries(PERSISTED_RESULTS)) {
-      if (!LIVE.scores.matches[k]) LIVE.scores.matches[k] = v;
-    }
-  } catch (e) { /* silent */ }
+  let data = null;
+  for (const url of [RESULTS_RAW_URL, '/results.json']) {
+    try {
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) continue;
+      data = await r.json();
+      break;
+    } catch (e) { /* try next source */ }
+  }
+  if (!data) return;
+  PERSISTED_RESULTS = data.completed || {};
+  // Inject any keys not already present in the live window.
+  for (const [k, v] of Object.entries(PERSISTED_RESULTS)) {
+    if (!LIVE.scores.matches[k]) LIVE.scores.matches[k] = v;
+  }
 }
 
 // Commence-time -> upstream fixture index for knockout auto-fill.
