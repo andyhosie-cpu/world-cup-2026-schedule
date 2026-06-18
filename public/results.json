@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-15T14:24:07.952Z",
+  "lastUpdated": "2026-06-18T09:22:12.090Z",
   "completed": {
     "2026-06-12|bosnia and herzegovina|canada": {
       "homeTeam": "Canada",
@@ -96,6 +96,102 @@
       "awayScore": "1",
       "commenceTime": "2026-06-12T02:00:00Z",
       "recordedAt": "2026-06-15T14:24:07.952Z"
+    },
+    "2026-06-15|cape verde|spain": {
+      "homeTeam": "Spain",
+      "awayTeam": "Cape Verde",
+      "homeScore": "0",
+      "awayScore": "0",
+      "commenceTime": "2026-06-15T16:01:00Z",
+      "recordedAt": "2026-06-18T09:22:12.090Z"
+    },
+    "2026-06-15|belgium|egypt": {
+      "homeTeam": "Belgium",
+      "awayTeam": "Egypt",
+      "homeScore": "1",
+      "awayScore": "1",
+      "commenceTime": "2026-06-15T19:00:00Z",
+      "recordedAt": "2026-06-18T09:22:12.090Z"
+    },
+    "2026-06-15|saudi arabia|uruguay": {
+      "homeTeam": "Saudi Arabia",
+      "awayTeam": "Uruguay",
+      "homeScore": "1",
+      "awayScore": "1",
+      "commenceTime": "2026-06-15T22:03:00Z",
+      "recordedAt": "2026-06-18T09:22:12.090Z"
+    },
+    "2026-06-15|iran|new zealand": {
+      "homeTeam": "Iran",
+      "awayTeam": "New Zealand",
+      "homeScore": "2",
+      "awayScore": "2",
+      "commenceTime": "2026-06-16T01:03:00Z",
+      "recordedAt": "2026-06-18T09:22:12.090Z"
+    },
+    "2026-06-16|france|senegal": {
+      "homeTeam": "France",
+      "awayTeam": "Senegal",
+      "homeScore": "3",
+      "awayScore": "1",
+      "commenceTime": "2026-06-16T19:02:00Z",
+      "recordedAt": "2026-06-18T09:22:12.090Z"
+    },
+    "2026-06-16|iraq|norway": {
+      "homeTeam": "Iraq",
+      "awayTeam": "Norway",
+      "homeScore": "1",
+      "awayScore": "4",
+      "commenceTime": "2026-06-16T22:00:00Z",
+      "recordedAt": "2026-06-18T09:22:12.090Z"
+    },
+    "2026-06-16|algeria|argentina": {
+      "homeTeam": "Argentina",
+      "awayTeam": "Algeria",
+      "homeScore": "3",
+      "awayScore": "0",
+      "commenceTime": "2026-06-17T01:02:00Z",
+      "recordedAt": "2026-06-18T09:22:12.090Z"
+    },
+    "2026-06-17|austria|jordan": {
+      "homeTeam": "Austria",
+      "awayTeam": "Jordan",
+      "homeScore": "3",
+      "awayScore": "1",
+      "commenceTime": "2026-06-17T04:02:00Z",
+      "recordedAt": "2026-06-18T09:22:12.090Z"
+    },
+    "2026-06-17|dr congo|portugal": {
+      "homeTeam": "Portugal",
+      "awayTeam": "DR Congo",
+      "homeScore": "1",
+      "awayScore": "1",
+      "commenceTime": "2026-06-17T17:01:00Z",
+      "recordedAt": "2026-06-18T09:22:12.090Z"
+    },
+    "2026-06-17|croatia|england": {
+      "homeTeam": "England",
+      "awayTeam": "Croatia",
+      "homeScore": "4",
+      "awayScore": "2",
+      "commenceTime": "2026-06-17T20:00:00Z",
+      "recordedAt": "2026-06-18T09:22:12.090Z"
+    },
+    "2026-06-17|ghana|panama": {
+      "homeTeam": "Ghana",
+      "awayTeam": "Panama",
+      "homeScore": "1",
+      "awayScore": "0",
+      "commenceTime": "2026-06-17T23:00:00Z",
+      "recordedAt": "2026-06-18T09:22:12.090Z"
+    },
+    "2026-06-17|colombia|uzbekistan": {
+      "homeTeam": "Uzbekistan",
+      "awayTeam": "Colombia",
+      "homeScore": "1",
+      "awayScore": "3",
+      "commenceTime": "2026-06-18T02:00:00Z",
+      "recordedAt": "2026-06-18T09:22:12.090Z"
     }
   }
 }
