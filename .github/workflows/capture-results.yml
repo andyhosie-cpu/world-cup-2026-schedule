@@ -1,0 +1,41 @@
+name: Capture results
+
+# Checks the live scores feed hourly and appends any newly-final match to the
+# permanent ledger (public/results.json), committing straight to main. The live
+# site reads the ledger from the GitHub raw URL, so captures appear without a
+# redeploy. Uses the built-in GITHUB_TOKEN — no PAT required.
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # every hour, on the hour (UTC)
+  workflow_dispatch: {}    # allow manual runs for testing
+
+permissions:
+  contents: write
+
+concurrency:
+  group: capture-results
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Capture newly-final results
+        run: node scripts/capture-results.mjs
+      - name: Commit & push if changed
+        run: |
+          if [[ -n "$(git status --porcelain public/results.json)" ]]; then
+            git config user.name "wc-results-bot"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            N=$(jq '.completed | length' public/results.json)
+            git add public/results.json
+            git commit -m "chore(results): capture finals (ledger now $N)"
+            git push
+          else
+            echo "No changes to commit."
+          fi
