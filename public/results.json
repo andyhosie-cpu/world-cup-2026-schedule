@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-20T00:10:25.387Z",
+  "lastUpdated": "2026-06-20T05:16:33.170Z",
   "completed": {
     "2026-06-12|bosnia and herzegovina|canada": {
       "homeTeam": "Canada",
@@ -240,6 +240,22 @@
       "awayScore": "1",
       "commenceTime": "2026-06-19T22:00:00Z",
       "recordedAt": "2026-06-20T00:10:25.387Z"
+    },
+    "2026-06-19|brazil|haiti": {
+      "homeTeam": "Brazil",
+      "awayTeam": "Haiti",
+      "homeScore": "3",
+      "awayScore": "0",
+      "commenceTime": "2026-06-20T00:32:00Z",
+      "recordedAt": "2026-06-20T05:16:33.170Z"
+    },
+    "2026-06-19|paraguay|türkiye": {
+      "homeTeam": "Turkey",
+      "awayTeam": "Paraguay",
+      "homeScore": "0",
+      "awayScore": "1",
+      "commenceTime": "2026-06-20T03:00:00Z",
+      "recordedAt": "2026-06-20T05:16:33.170Z"
     }
   }
 }
