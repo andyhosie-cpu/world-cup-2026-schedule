@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-22T19:30:58.654Z",
+  "lastUpdated": "2026-06-23T05:03:21.642Z",
   "completed": {
     "2026-06-12|bosnia and herzegovina|canada": {
       "homeTeam": "Canada",
@@ -328,6 +328,30 @@
       "awayScore": "0",
       "commenceTime": "2026-06-22T17:00:00Z",
       "recordedAt": "2026-06-22T19:30:58.654Z"
+    },
+    "2026-06-22|france|iraq": {
+      "homeTeam": "France",
+      "awayTeam": "Iraq",
+      "homeScore": "3",
+      "awayScore": "0",
+      "commenceTime": "2026-06-22T21:00:00Z",
+      "recordedAt": "2026-06-23T05:03:21.642Z"
+    },
+    "2026-06-22|norway|senegal": {
+      "homeTeam": "Norway",
+      "awayTeam": "Senegal",
+      "homeScore": "3",
+      "awayScore": "2",
+      "commenceTime": "2026-06-23T00:00:00Z",
+      "recordedAt": "2026-06-23T05:03:21.642Z"
+    },
+    "2026-06-22|algeria|jordan": {
+      "homeTeam": "Jordan",
+      "awayTeam": "Algeria",
+      "homeScore": "1",
+      "awayScore": "2",
+      "commenceTime": "2026-06-23T03:00:00Z",
+      "recordedAt": "2026-06-23T05:03:21.642Z"
     }
   }
 }
