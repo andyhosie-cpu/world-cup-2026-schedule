@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-23T05:03:21.642Z",
+  "lastUpdated": "2026-06-23T20:17:54.854Z",
   "completed": {
     "2026-06-12|bosnia and herzegovina|canada": {
       "homeTeam": "Canada",
@@ -352,6 +352,14 @@
       "awayScore": "2",
       "commenceTime": "2026-06-23T03:00:00Z",
       "recordedAt": "2026-06-23T05:03:21.642Z"
+    },
+    "2026-06-23|portugal|uzbekistan": {
+      "homeTeam": "Portugal",
+      "awayTeam": "Uzbekistan",
+      "homeScore": "5",
+      "awayScore": "0",
+      "commenceTime": "2026-06-23T17:00:00Z",
+      "recordedAt": "2026-06-23T20:17:54.854Z"
     }
   }
 }
