@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-24T21:24:40.716Z",
+  "lastUpdated": "2026-06-25T03:45:38.219Z",
   "completed": {
     "2026-06-12|bosnia and herzegovina|canada": {
       "homeTeam": "Canada",
@@ -400,6 +400,38 @@
       "awayScore": "1",
       "commenceTime": "2026-06-24T19:00:00Z",
       "recordedAt": "2026-06-24T21:24:40.716Z"
+    },
+    "2026-06-24|haiti|morocco": {
+      "homeTeam": "Morocco",
+      "awayTeam": "Haiti",
+      "homeScore": "4",
+      "awayScore": "2",
+      "commenceTime": "2026-06-24T22:00:00Z",
+      "recordedAt": "2026-06-25T03:45:38.219Z"
+    },
+    "2026-06-24|brazil|scotland": {
+      "homeTeam": "Scotland",
+      "awayTeam": "Brazil",
+      "homeScore": "0",
+      "awayScore": "3",
+      "commenceTime": "2026-06-24T22:01:00Z",
+      "recordedAt": "2026-06-25T03:45:38.219Z"
+    },
+    "2026-06-24|czechia|mexico": {
+      "homeTeam": "Czech Republic",
+      "awayTeam": "Mexico",
+      "homeScore": "0",
+      "awayScore": "3",
+      "commenceTime": "2026-06-25T01:00:00Z",
+      "recordedAt": "2026-06-25T03:45:38.219Z"
+    },
+    "2026-06-24|south africa|south korea": {
+      "homeTeam": "South Africa",
+      "awayTeam": "South Korea",
+      "homeScore": "1",
+      "awayScore": "0",
+      "commenceTime": "2026-06-25T01:00:00Z",
+      "recordedAt": "2026-06-25T03:45:38.219Z"
     }
   }
 }
