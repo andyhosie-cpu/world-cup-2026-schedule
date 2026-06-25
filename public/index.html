@@ -1503,6 +1503,7 @@ const LIVE = {
 let PERSISTED_RESULTS = {};
 let ODDS_BY_COMMENCE = {};
 let ELIMINATED = new Set();
+let _scotWatch = { sig: null, html: '' };  // Scotland-watch scenario cache (hoisted to avoid TDZ on first render)
 const ET_OFFSET_MS_LIVE = 4 * 60 * 60 * 1000;
 
 // Knockout-row team resolution: also hoisted because render() calls it on
@@ -2085,7 +2086,7 @@ function simGroupThird(letter, scot) {
 }
 function ordSuffix(n) { const s = ['th','st','nd','rd'], v = n % 100; return s[(v - 20) % 10] || s[v] || s[0]; }
 // Cache the (fairly heavy) scenario computation; only recompute when results change.
-let _scotWatch = { sig: null, html: '' };
+// (_scotWatch is declared with the live-data globals to avoid a TDZ on first render.)
 function scotWatchSig() {
   let n = 0, g = 0;
   for (const m of Object.values(LIVE.scores.matches)) if (m.completed) { n++; g += (+m.homeScore || 0) + (+m.awayScore || 0); }
