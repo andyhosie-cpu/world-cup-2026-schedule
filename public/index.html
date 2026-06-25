@@ -1905,6 +1905,15 @@ async function fetchPersistedResults() {
   }
   if (!data) return;
   PERSISTED_RESULTS = data.completed || {};
+  // Ledger entries are final by definition but carry no `completed`/`status`
+  // flag. Mark them so standings + elimination logic (which require completed)
+  // count these results once they've aged out of the live scores window.
+  for (const v of Object.values(PERSISTED_RESULTS)) {
+    if (v && typeof v === 'object') {
+      if (v.completed === undefined) v.completed = true;
+      if (!v.status) v.status = 'FT';
+    }
+  }
   // Inject any keys not already present in the live window.
   for (const [k, v] of Object.entries(PERSISTED_RESULTS)) {
     if (!LIVE.scores.matches[k]) LIVE.scores.matches[k] = v;
