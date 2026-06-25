@@ -723,6 +723,21 @@
     .league-grid { grid-template-columns: 1fr; }
   }
 
+  /* Race for 3rd — best third-placed teams ranking */
+  .third-table { width: 100%; border-collapse: collapse; font-size: 12.5px; max-width: 560px; }
+  .third-table th, .third-table td { padding: 6px 8px; text-align: center; border-bottom: 1px solid #f0f0f0; }
+  .third-table th { font-size: 9px; text-transform: uppercase; letter-spacing: 0.3px; color: #999; font-weight: 700; background: #fafafa; }
+  .third-table td.team-name, .third-table th.team-name { text-align: left; font-weight: 600; color: #1a1a1a; white-space: nowrap; }
+  .third-table td.rank { color: #bbb; font-weight: 700; width: 22px; }
+  .third-table td.grp { color: #FF4500; font-weight: 700; width: 28px; }
+  .third-table td.pts { font-weight: 700; color: #1a1a1a; }
+  .third-table tr.qual td.rank { color: #16a34a; }
+  .third-table tr.scotland { background: #FFF5F0; }
+  .third-table tr.scotland td.team-name { color: #FF4500; }
+  .third-table tr.provisional td.team-name::after { content: ' ?'; color: #c9c9c9; font-weight: 400; }
+  .third-cutoff td { border-top: 2px dashed #FF4500; padding: 0; }
+  .third-cutoff .cutoff-label { font-size: 9px; color: #FF4500; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 8px; text-align: left; font-weight: 700; }
+
   .outrights-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -813,6 +828,14 @@
       <span class="league-meta">Group standings · updates as results come in</span>
     </div>
     <div class="league-body"><div class="league-grid" id="leagueGrid"></div></div>
+  </div>
+
+  <div class="league-panel" id="thirdPanel">
+    <div class="league-head" id="thirdHead">
+      <span class="league-title">Race for 3rd</span>
+      <span class="league-meta">Best third-placed teams · top 8 qualify</span>
+    </div>
+    <div class="league-body"><div id="thirdRace"></div></div>
   </div>
 
   <div class="filters">
@@ -1799,6 +1822,7 @@ function render() {
     }
   });
   renderLeagueTables();
+  renderThirdPlaceRace();
 }
 
 // ============================================
@@ -1989,6 +2013,43 @@ function renderLeagueTables() {
       `</tr></thead><tbody>${rows}</tbody></table></div>`;
   }
   grid.innerHTML = html;
+}
+
+// Render the "Race for 3rd" — the 12 third-placed teams ranked by the same
+// criteria FIFA uses to pick the best 8 (points, then goal difference, then
+// goals scored). Top 8 qualify; the cutoff line and Scotland are highlighted.
+// Groups still in progress are flagged provisional (their 3rd can still change).
+function renderThirdPlaceRace() {
+  const host = document.getElementById('thirdRace');
+  if (!host) return;
+  const thirds = Object.keys(GROUPS).map(letter => {
+    const { standings, done } = computeGroupStandings(letter);
+    const s = standings[2];
+    return { group: letter, team: s.team, P: s.P, GF: s.GF, GA: s.GA, GD: s.GF - s.GA, Pts: s.Pts, locked: done === 6 };
+  });
+  thirds.sort((a, b) => b.Pts - a.Pts || b.GD - a.GD || b.GF - a.GF);
+  const gd = n => n > 0 ? `+${n}` : `${n}`;
+  let rows = '';
+  thirds.forEach((t, i) => {
+    const rank = i + 1;
+    const cls = [];
+    if (rank <= 8) cls.push('qual');
+    if (t.team === 'Scotland') cls.push('scotland');
+    if (!t.locked) cls.push('provisional');
+    rows += `<tr class="${cls.join(' ')}">` +
+      `<td class="rank">${rank}</td><td class="grp">${t.group}</td>` +
+      `<td class="team-name">${t.team}</td>` +
+      `<td>${t.P}</td><td>${t.GF}</td><td>${t.GA}</td><td>${gd(t.GD)}</td>` +
+      `<td class="pts">${t.Pts}</td></tr>`;
+    if (rank === 8) {
+      rows += `<tr class="third-cutoff"><td colspan="8" class="cutoff-label">— top 8 qualify ↑ · out ↓ —</td></tr>`;
+    }
+  });
+  host.innerHTML = `<table class="third-table"><thead><tr>` +
+    `<th class="rank">#</th><th class="grp">Grp</th><th class="team-name">Team</th>` +
+    `<th>P</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th>` +
+    `</tr></thead><tbody>${rows}</tbody></table>` +
+    `<div style="font-size:10px;color:#999;margin-top:8px;">"?" = group still in progress (provisional 3rd). Ranked by points → goal difference → goals scored.</div>`;
 }
 
 // Eliminated-team tracking. For the "possible teams" expansion strikethrough.
@@ -2184,6 +2245,11 @@ document.getElementById('outrightsHead').addEventListener('click', () => {
 // League tables panel toggle (the "League tables" button)
 document.getElementById('leagueHead').addEventListener('click', () => {
   document.getElementById('leaguePanel').classList.toggle('is-open');
+});
+
+// Race for 3rd panel toggle
+document.getElementById('thirdHead').addEventListener('click', () => {
+  document.getElementById('thirdPanel').classList.toggle('is-open');
 });
 
 // One-shot load: fetch everything once when the page loads or is refreshed.
