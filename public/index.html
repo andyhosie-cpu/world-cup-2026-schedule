@@ -695,7 +695,7 @@
     color: #fff;
     background: #FF4500;
   }
-  .group-table table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .group-table table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
   .group-table th, .group-table td {
     padding: 4px 4px;
     text-align: center;
@@ -715,9 +715,9 @@
     color: #1a1a1a;
     white-space: normal;
     line-height: 1.15;
-    min-width: 80px;
+    width: 40%;
   }
-  .group-table td.rank { width: 16px; color: #bbb; font-weight: 700; }
+  .group-table td.rank, .group-table th.rank { width: 22px; color: #bbb; font-weight: 700; }
   .group-table td.pts { font-weight: 700; color: #1a1a1a; }
   .group-table tr.elim td.team-name { text-decoration: line-through; color: #aaa; }
   .group-table tr:last-child td { border-bottom: none; }
