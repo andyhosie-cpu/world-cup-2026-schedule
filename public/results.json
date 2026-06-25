@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-25T03:45:38.219Z",
+  "lastUpdated": "2026-06-25T23:20:05.990Z",
   "completed": {
     "2026-06-12|bosnia and herzegovina|canada": {
       "homeTeam": "Canada",
@@ -432,6 +432,22 @@
       "awayScore": "0",
       "commenceTime": "2026-06-25T01:00:00Z",
       "recordedAt": "2026-06-25T03:45:38.219Z"
+    },
+    "2026-06-25|curaçao|ivory coast": {
+      "homeTeam": "Curaçao",
+      "awayTeam": "Ivory Coast",
+      "homeScore": "0",
+      "awayScore": "2",
+      "commenceTime": "2026-06-25T20:00:00Z",
+      "recordedAt": "2026-06-25T23:20:05.990Z"
+    },
+    "2026-06-25|ecuador|germany": {
+      "homeTeam": "Ecuador",
+      "awayTeam": "Germany",
+      "homeScore": "2",
+      "awayScore": "1",
+      "commenceTime": "2026-06-25T20:00:00Z",
+      "recordedAt": "2026-06-25T23:20:05.990Z"
     }
   }
 }
