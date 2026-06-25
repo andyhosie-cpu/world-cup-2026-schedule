@@ -637,6 +637,92 @@
     padding: 12px 16px 14px;
   }
   .outrights-panel.is-open .outrights-body { display: block; }
+
+  /* League tables panel — mirrors the outrights collapsible */
+  .league-panel {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .league-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 16px;
+    cursor: pointer;
+    user-select: none;
+    background: #FFF5F0;
+    border-bottom: 1px solid transparent;
+    transition: background 0.12s;
+  }
+  .league-head:hover { background: #FFE0D0; }
+  .league-panel.is-open .league-head { border-bottom-color: #FFE0D0; }
+  .league-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #FF4500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .league-title::before {
+    content: '▸';
+    color: #FF4500;
+    font-size: 10px;
+    transition: transform 0.15s;
+  }
+  .league-panel.is-open .league-title::before { transform: rotate(90deg); }
+  .league-meta { margin-left: auto; font-size: 10px; color: #888; }
+  .league-body { display: none; padding: 14px 16px 16px; }
+  .league-panel.is-open .league-body { display: block; }
+  .league-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 14px;
+  }
+  .group-table { border: 1px solid #eee; border-radius: 5px; overflow: hidden; }
+  .group-table h3 {
+    margin: 0;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff;
+    background: #FF4500;
+  }
+  .group-table table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .group-table th, .group-table td {
+    padding: 5px 6px;
+    text-align: center;
+    border-bottom: 1px solid #f1f1f1;
+  }
+  .group-table th {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: #999;
+    font-weight: 700;
+    background: #fafafa;
+  }
+  .group-table td.team-name, .group-table th.team-name {
+    text-align: left;
+    font-weight: 600;
+    color: #1a1a1a;
+    white-space: nowrap;
+  }
+  .group-table td.rank { width: 16px; color: #bbb; font-weight: 700; }
+  .group-table td.pts { font-weight: 700; color: #1a1a1a; }
+  .group-table tr.elim td.team-name { text-decoration: line-through; color: #aaa; }
+  .group-table tr:last-child td { border-bottom: none; }
+  @media (max-width: 700px) {
+    .league-grid { grid-template-columns: 1fr; }
+  }
+
   .outrights-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -719,6 +805,14 @@
       <span class="outrights-meta" id="outrightsMeta">Loading…</span>
     </div>
     <div class="outrights-body" id="outrightsBody"></div>
+  </div>
+
+  <div class="league-panel" id="leaguePanel">
+    <div class="league-head" id="leagueHead">
+      <span class="league-title">League tables</span>
+      <span class="league-meta">Group standings · updates as results come in</span>
+    </div>
+    <div class="league-body"><div class="league-grid" id="leagueGrid"></div></div>
   </div>
 
   <div class="filters">
@@ -1704,6 +1798,7 @@ function render() {
       th.appendChild(s);
     }
   });
+  renderLeagueTables();
 }
 
 // ============================================
@@ -1827,6 +1922,66 @@ function rebuildOddsByCommence() {
 // (expectedCommenceUTC, resolveTeams and ET_OFFSET_MS_LIVE are hoisted
 // to the top of the live-data block.)
 
+// Compute a group's standings from completed results. Returns
+// { standings, done } where standings is [{team,P,W,D,L,GF,GA,Pts}] sorted by
+// points, then goal difference (GF-GA), then goals for; done = matches played.
+function computeGroupStandings(letter) {
+  const teams = GROUPS[letter] || [];
+  const standings = teams.map(t => ({ team: t, P:0, W:0, D:0, L:0, GF:0, GA:0, Pts:0 }));
+  let done = 0;
+  for (const mm of MATCHES) {
+    if (mm.stage !== letter) continue;
+    const key = joinKeyFor(mm);
+    const r = LIVE.scores.matches[key];
+    if (!r || !r.completed || r.homeScore == null || r.awayScore == null) continue;
+    done++;
+    const homeIsT1 = normaliseTeam(mm.t1) === normaliseTeam(r.homeTeam);
+    const t1 = +(homeIsT1 ? r.homeScore : r.awayScore);
+    const t2 = +(homeIsT1 ? r.awayScore : r.homeScore);
+    const s1 = standings.find(s => s.team === mm.t1);
+    const s2 = standings.find(s => s.team === mm.t2);
+    if (!s1 || !s2) continue;
+    s1.P++; s2.P++;
+    s1.GF += t1; s1.GA += t2;
+    s2.GF += t2; s2.GA += t1;
+    if (t1 > t2) { s1.W++; s1.Pts += 3; s2.L++; }
+    else if (t1 < t2) { s2.W++; s2.Pts += 3; s1.L++; }
+    else { s1.D++; s2.D++; s1.Pts++; s2.Pts++; }
+  }
+  standings.sort((a, b) =>
+    (b.Pts - a.Pts) || ((b.GF - b.GA) - (a.GF - a.GA)) || (b.GF - a.GF));
+  return { standings, done };
+}
+
+// Render the 12 group standings tables into the collapsible "League tables"
+// panel. Pure function of the current results, so it stays in sync as finals
+// come in. Eliminated teams (computed in recomputeEliminated) are struck through.
+function renderLeagueTables() {
+  const grid = document.getElementById('leagueGrid');
+  if (!grid) return;
+  const cols = ['P', 'W', 'D', 'L', 'GF', 'GA', 'GD', 'Pts'];
+  let html = '';
+  for (const letter of Object.keys(GROUPS)) {
+    const { standings } = computeGroupStandings(letter);
+    const rows = standings.map((s, i) => {
+      const gd = s.GF - s.GA;
+      const gdStr = gd > 0 ? `+${gd}` : `${gd}`;
+      const cls = ELIMINATED.has(s.team) ? ' class="elim"' : '';
+      return `<tr${cls}>` +
+        `<td class="rank">${i + 1}</td>` +
+        `<td class="team-name">${s.team}</td>` +
+        `<td>${s.P}</td><td>${s.W}</td><td>${s.D}</td><td>${s.L}</td>` +
+        `<td>${s.GF}</td><td>${s.GA}</td><td>${gdStr}</td>` +
+        `<td class="pts">${s.Pts}</td></tr>`;
+    }).join('');
+    html += `<div class="group-table"><h3>Group ${letter}</h3><table>` +
+      `<thead><tr><th class="rank"></th><th class="team-name">Team</th>` +
+      cols.map(c => `<th>${c}</th>`).join('') +
+      `</tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  grid.innerHTML = html;
+}
+
 // Eliminated-team tracking. For the "possible teams" expansion strikethrough.
 // (ELIMINATED is declared at the top with the other live-data globals.)
 function recomputeEliminated() {
@@ -1834,33 +1989,10 @@ function recomputeEliminated() {
   // Group-stage: 4th-placed team is definitely eliminated once all 6 group
   // matches are completed. 3rd-placed is tentative (best 8 of 12 advance);
   // we don't strike them through to keep the bracket honest.
-  for (const [letter, teams] of Object.entries(GROUPS)) {
-    const standings = teams.map(t => ({ team: t, P:0, W:0, D:0, L:0, GF:0, GA:0, Pts:0 }));
-    let done = 0;
-    for (const mm of MATCHES) {
-      if (mm.stage !== letter) continue;
-      const key = joinKeyFor(mm);
-      const r = LIVE.scores.matches[key];
-      if (!r || !r.completed || r.homeScore == null || r.awayScore == null) continue;
-      done++;
-      const homeIsT1 = normaliseTeam(mm.t1) === normaliseTeam(r.homeTeam);
-      const t1 = +(homeIsT1 ? r.homeScore : r.awayScore);
-      const t2 = +(homeIsT1 ? r.awayScore : r.homeScore);
-      const s1 = standings.find(s => s.team === mm.t1);
-      const s2 = standings.find(s => s.team === mm.t2);
-      if (!s1 || !s2) continue;
-      s1.P++; s2.P++;
-      s1.GF += t1; s1.GA += t2;
-      s2.GF += t2; s2.GA += t1;
-      if (t1 > t2) { s1.W++; s1.Pts += 3; s2.L++; }
-      else if (t1 < t2) { s2.W++; s2.Pts += 3; s1.L++; }
-      else { s1.D++; s2.D++; s1.Pts++; s2.Pts++; }
-    }
-    if (done === 6) {
-      standings.sort((a, b) =>
-        (b.Pts - a.Pts) || ((b.GF - b.GA) - (a.GF - a.GA)) || (b.GF - a.GF));
-      ELIMINATED.add(standings[3].team);
-    }
+  for (const letter of Object.keys(GROUPS)) {
+    const { standings, done } = computeGroupStandings(letter);
+    // 4th-placed team is definitely out once all 6 group matches are done.
+    if (done === 6) ELIMINATED.add(standings[3].team);
   }
   // Knockout losers
   for (const mm of MATCHES) {
@@ -2038,6 +2170,11 @@ function renderOutrights() {
 // Outrights panel toggle
 document.getElementById('outrightsHead').addEventListener('click', () => {
   document.getElementById('outrightsPanel').classList.toggle('is-open');
+});
+
+// League tables panel toggle (the "League tables" button)
+document.getElementById('leagueHead').addEventListener('click', () => {
+  document.getElementById('leaguePanel').classList.toggle('is-open');
 });
 
 // One-shot load: fetch everything once when the page loads or is refreshed.
