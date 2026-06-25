@@ -739,15 +739,6 @@
   .third-table tr.provisional td.team-name::after { content: ' ?'; color: #c9c9c9; font-weight: 400; }
   .third-cutoff td { border-top: 2px dashed #FF4500; padding: 0; }
   .third-cutoff .cutoff-label { font-size: 9px; color: #FF4500; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 8px; text-align: left; font-weight: 700; }
-  /* Scotland watch (qualification scenarios) */
-  .scot-watch { background: #FFF8F4; border: 1px solid #FFD9C4; border-radius: 6px; padding: 10px 12px; margin-bottom: 14px; }
-  .scot-watch .sw-head { font-size: 13px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
-  .scot-watch .sw-sub { font-size: 11.5px; color: #555; margin-bottom: 8px; line-height: 1.4; }
-  .scot-watch .sw-list { margin: 0; padding-left: 16px; font-size: 11.5px; color: #333; line-height: 1.5; }
-  .scot-watch .sw-list li { margin-bottom: 2px; }
-  .scot-watch .sw-yes { color: #16a34a; font-weight: 600; }
-  .scot-watch .sw-no { color: #b91c1c; font-weight: 600; }
-  .scot-watch .sw-muted { color: #999; }
 
   .outrights-grid {
     display: grid;
@@ -1503,7 +1494,6 @@ const LIVE = {
 let PERSISTED_RESULTS = {};
 let ODDS_BY_COMMENCE = {};
 let ELIMINATED = new Set();
-let _scotWatch = { sig: null, html: '' };  // Scotland-watch scenario cache (hoisted to avoid TDZ on first render)
 const ET_OFFSET_MS_LIVE = 4 * 60 * 60 * 1000;
 
 // Knockout-row team resolution: also hoisted because render() calls it on
@@ -2025,113 +2015,6 @@ function renderLeagueTables() {
       `</tr></thead><tbody>${rows}</tbody></table></div>`;
   }
   grid.innerHTML = html;
-}
-
-// ---- Scotland qualification scenarios (computed live) ----
-// Scotland's locked 3rd-place line (she is Group C's third-placed team).
-function scotlandThirdLine() {
-  for (const g of Object.keys(GROUPS)) {
-    const { standings } = computeGroupStandings(g);
-    if (standings[2] && standings[2].team === 'Scotland') {
-      const s = standings[2];
-      return { group: g, Pts: s.Pts, GD: s.GF - s.GA, GF: s.GF };
-    }
-  }
-  return null;
-}
-// Does a third-placed line rank BELOW Scotland's? (points, then GD, then goals)
-function belowScot(t, scot) {
-  if (t.Pts !== scot.Pts) return t.Pts < scot.Pts;
-  if (t.GD !== scot.GD) return t.GD < scot.GD;
-  return t.GF < scot.GF;
-}
-function groupRemainingFixtures(letter) {
-  return MATCHES.filter(m => m.stage === letter).filter(m => {
-    const r = LIVE.scores.matches[joinKeyFor(m)];
-    return !(r && r.completed && r.homeScore != null && r.awayScore != null);
-  }).map(m => [m.t1, m.t2]);
-}
-// Simulate a group's remaining games over every scoreline (0-6) and report
-// whether its 3rd-placed team can / must finish below Scotland, plus a minimal
-// example scoreline set.
-function simGroupThird(letter, scot) {
-  const { standings } = computeGroupStandings(letter);
-  const base = {};
-  for (const s of standings) base[s.team] = { Pts: s.Pts, GF: s.GF, GA: s.GA };
-  const fx = groupRemainingFixtures(letter);
-  const MAXG = 6;
-  const combos = [];
-  (function rec(i, acc) {
-    if (i === fx.length) { combos.push(acc.slice()); return; }
-    for (let a = 0; a <= MAXG; a++) for (let b = 0; b <= MAXG; b++) { acc.push([a, b]); rec(i + 1, acc); acc.pop(); }
-  })(0, []);
-  let any = false, all = true, example = null, exGoals = Infinity;
-  for (const combo of combos) {
-    const st = {};
-    for (const k in base) st[k] = { team: k, Pts: base[k].Pts, GF: base[k].GF, GA: base[k].GA };
-    combo.forEach(([a, b], idx) => {
-      const [X, Y] = fx[idx];
-      st[X].GF += a; st[X].GA += b; st[Y].GF += b; st[Y].GA += a;
-      if (a > b) st[X].Pts += 3; else if (b > a) st[Y].Pts += 3; else { st[X].Pts++; st[Y].Pts++; }
-    });
-    const arr = Object.values(st).map(o => ({ ...o, GD: o.GF - o.GA }));
-    arr.sort((p, q) => q.Pts - p.Pts || q.GD - p.GD || q.GF - p.GF);
-    if (belowScot(arr[2], scot)) {
-      any = true;
-      const tot = combo.reduce((s, [a, b]) => s + a + b, 0);
-      if (tot < exGoals) { exGoals = tot; example = { combo, third: arr[2] }; }
-    } else { all = false; }
-  }
-  return { possible: any, guaranteed: any && all, example, fx };
-}
-function ordSuffix(n) { const s = ['th','st','nd','rd'], v = n % 100; return s[(v - 20) % 10] || s[v] || s[0]; }
-// Cache the (fairly heavy) scenario computation; only recompute when results change.
-// (_scotWatch is declared with the live-data globals to avoid a TDZ on first render.)
-function scotWatchSig() {
-  let n = 0, g = 0;
-  for (const m of Object.values(LIVE.scores.matches)) if (m.completed) { n++; g += (+m.homeScore || 0) + (+m.awayScore || 0); }
-  return n + ':' + g;
-}
-function scotlandWatchHTML() {
-  const sig = scotWatchSig();
-  if (_scotWatch.sig === sig) return _scotWatch.html;
-  const scot = scotlandThirdLine();
-  if (!scot) { _scotWatch = { sig, html: '' }; return ''; }
-  const thirds = Object.keys(GROUPS).map(g => {
-    const { standings, done } = computeGroupStandings(g);
-    const s = standings[2];
-    return { group: g, team: s.team, Pts: s.Pts, GD: s.GF - s.GA, GF: s.GF, locked: done === 6 };
-  }).sort((a, b) => b.Pts - a.Pts || b.GD - a.GD || b.GF - a.GF);
-  const rank = thirds.findIndex(t => t.team === 'Scotland') + 1;
-  const below = thirds.filter(t => t.group !== scot.group && belowScot(t, scot)).length;
-  const status = rank <= 8 ? '<span class="sw-yes">IN — above the line</span>' : '<span class="sw-no">OUT — below the line</span>';
-  let canCount = 0, lines = '';
-  for (const t of thirds) {
-    if (t.group === scot.group) continue;
-    if (t.locked) {
-      const b = belowScot(t, scot);
-      lines += `<li><b>Group ${t.group}</b> · ${t.team} — ${b ? '<span class="sw-yes">below ✓</span>' : '<span class="sw-no">above ✗</span>'} <span class="sw-muted">(final)</span></li>`;
-    } else {
-      const sim = simGroupThird(t.group, scot);
-      if (sim.possible) canCount++;
-      let note;
-      if (sim.guaranteed) note = '<span class="sw-yes">guaranteed below ✓</span>';
-      else if (!sim.possible) note = '<span class="sw-no">can\'t finish below ✗</span>';
-      else {
-        const ex = sim.example.combo.map((sc, i) => `${sim.fx[i][0]} ${sc[0]}–${sc[1]} ${sim.fx[i][1]}`).join(', ');
-        const prov = belowScot(t, scot);
-        note = `${prov ? '<span class="sw-yes">currently below ✓</span>' : '<span class="sw-no">currently above ✗</span>'} · can go below — e.g. ${ex}`;
-      }
-      lines += `<li><b>Group ${t.group}</b> · ${t.team} (prov.) — ${note}</li>`;
-    }
-  }
-  const html = `<div class="scot-watch">
-    <div class="sw-head">🏴 Scotland watch — currently ${rank}${ordSuffix(rank)} of 12 · ${status}</div>
-    <div class="sw-sub">Scotland's 3rd-place line: <b>${scot.Pts} pts, GD ${scot.GD >= 0 ? '+' : ''}${scot.GD}, ${scot.GF} GF</b>. Needs <b>≥4</b> third-placed teams below her — <b>${below} currently below</b>; ${canCount} live group(s) can still drop one below.</div>
-    <ul class="sw-list">${lines}</ul>
-  </div>`;
-  _scotWatch = { sig, html };
-  return html;
 }
 
 // Render the "Race for 3rd" — the 12 third-placed teams ranked by the same
