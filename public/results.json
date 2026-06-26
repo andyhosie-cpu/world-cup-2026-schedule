@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-25T23:20:05.990Z",
+  "lastUpdated": "2026-06-26T03:54:45.465Z",
   "completed": {
     "2026-06-12|bosnia and herzegovina|canada": {
       "homeTeam": "Canada",
@@ -448,6 +448,22 @@
       "awayScore": "1",
       "commenceTime": "2026-06-25T20:00:00Z",
       "recordedAt": "2026-06-25T23:20:05.990Z"
+    },
+    "2026-06-25|japan|sweden": {
+      "homeTeam": "Japan",
+      "awayTeam": "Sweden",
+      "homeScore": "1",
+      "awayScore": "1",
+      "commenceTime": "2026-06-25T23:00:00Z",
+      "recordedAt": "2026-06-26T03:54:45.465Z"
+    },
+    "2026-06-25|netherlands|tunisia": {
+      "homeTeam": "Tunisia",
+      "awayTeam": "Netherlands",
+      "homeScore": "1",
+      "awayScore": "3",
+      "commenceTime": "2026-06-25T23:00:00Z",
+      "recordedAt": "2026-06-26T03:54:45.465Z"
     }
   }
 }
