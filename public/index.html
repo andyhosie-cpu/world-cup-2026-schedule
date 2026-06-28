@@ -1171,11 +1171,13 @@ function teamsForSide(feed) {
   return out;
 }
 function teamsForMatch(num) {
-  // Once a knockout match's teams are known (resolved from the feed/results),
-  // those two ARE the only possibilities — this narrows the possible-teams of
-  // later rounds to the actual qualifiers as each round resolves. (No caching:
-  // resolution changes as results come in.)
-  const mm = MATCHES.find(x => x.num === num);
+  // Narrows the possible-teams of later rounds to actual qualifiers as results
+  // land: once a match is DECIDED only the winner advances (loser removed); if
+  // its teams are known but not yet decided, both remain possible; otherwise
+  // expand the bracket. (No caching — resolution changes as results come in.)
+  const w = koWinnerOfNum(num);
+  if (w) return new Set([w]);
+  const mm = matchByNum[num];
   if (mm) {
     const rt = resolveTeams(mm);
     if (rt.resolved) return new Set([rt.t1, rt.t2]);
@@ -1516,13 +1518,77 @@ function expectedCommenceUTC(match) {
   const dt = new Date(Date.UTC(Y, M - 1, D, h, m));
   return new Date(dt.getTime() + ET_OFFSET_MS_LIVE).toISOString();
 }
+// Feed-only resolution: the authoritative fixture from the odds/scores feed.
+// This carries the official 3rd-place allocation AND, for later rounds, the
+// actual qualifier (penalty winners included). Returns {t1,t2} or null.
+function feedResolve(match) {
+  if (match.stage.length === 1) return { t1: match.t1, t2: match.t2 };
+  const live = ODDS_BY_COMMENCE[new Date(expectedCommenceUTC(match)).getTime()];
+  if (live && live.homeTeam && live.awayTeam) return { t1: live.homeTeam, t2: live.awayTeam };
+  return null;
+}
+
+// Outcome of a completed knockout match (by number): { winner, loser, pens }
+// or null if not yet decided. Rules (handles extra time + penalties):
+//  - Only acts on `completed` matches, so an in-progress extra-time game (a
+//    non-final 90-min score) never propagates a winner.
+//  - Decisive final score -> that team wins.
+//  - Completed DRAW -> the match went to penalties; the score can't tell us who
+//    won, so we infer the winner from the next-round fixture once the feed lists
+//    it (the feed encodes the actual qualifier). Until then: undecided.
+function koOutcome(num) {
+  const m = matchByNum[num];
+  if (!m || m.stage.length === 1) return null;
+  const rt = resolveTeams(m);
+  if (!rt.resolved) return null;
+  const s = lookupForMatch(LIVE.scores.matches, { ...m, t1: rt.t1, t2: rt.t2 });
+  if (!s || !s.completed || s.homeScore == null || s.awayScore == null) return null;
+  const hs = +s.homeScore, as = +s.awayScore;
+  if (hs !== as) {
+    return { winner: hs > as ? s.homeTeam : s.awayTeam, loser: hs > as ? s.awayTeam : s.homeTeam, pens: false };
+  }
+  // Completed draw => penalties. Infer the advancing team from the next round.
+  const adv = inferAdvancer(num, rt.t1, rt.t2);
+  if (!adv) return { winner: null, loser: null, pens: true };
+  return { winner: adv, loser: normaliseTeam(adv) === normaliseTeam(rt.t1) ? rt.t2 : rt.t1, pens: true };
+}
+function koWinnerOfNum(num) { const o = koOutcome(num); return o ? o.winner : null; }
+function koLoserOfNum(num)  { const o = koOutcome(num); return o ? o.loser  : null; }
+
+// Which of {a,b} advanced from match `num`, per the next-round fixture as listed
+// by the feed (used to resolve penalty shootouts). Feed-only, to avoid recursion.
+function inferAdvancer(num, a, b) {
+  const nm = matchByNum[FEEDS_INTO[num]];
+  const fr = nm && feedResolve(nm);
+  if (!fr) return null;
+  const opts = [normaliseTeam(fr.t1), normaliseTeam(fr.t2)];
+  const na = normaliseTeam(a), nb = normaliseTeam(b);
+  if (opts.includes(na) && !opts.includes(nb)) return a;
+  if (opts.includes(nb) && !opts.includes(na)) return b;
+  return null;
+}
+
+// Resolve a single placeholder side ("Winner M73", "Loser M101", "Winner A",
+// "Runner-up B") to a team name, or null if not yet known.
+function resolveSide(p) {
+  let mm;
+  if ((mm = p.match(/^Winner M(\d+)$/))) return koWinnerOfNum(+mm[1]);
+  if ((mm = p.match(/^Loser M(\d+)$/)))  return koLoserOfNum(+mm[1]);
+  if ((mm = p.match(/^Winner ([A-L])$/)))    { const s = computeGroupStandings(mm[1]); return s.done === 6 ? s.standings[0].team : null; }
+  if ((mm = p.match(/^Runner-up ([A-L])$/))) { const s = computeGroupStandings(mm[1]); return s.done === 6 ? s.standings[1].team : null; }
+  return null; // "3rd-place X/Y/Z" only resolvable via the feed's allocation
+}
+
+// Resolve a match's teams: feed first (authoritative), else compute each side
+// from the bracket so winners cascade the instant a result is final. t1/t2 are
+// always populated (placeholder text as fallback); `resolved` = both known.
 function resolveTeams(match) {
   if (match.stage.length === 1) return { t1: match.t1, t2: match.t2, resolved: true };
-  const live = ODDS_BY_COMMENCE[new Date(expectedCommenceUTC(match)).getTime()];
-  if (live && live.homeTeam && live.awayTeam) {
-    return { t1: live.homeTeam, t2: live.awayTeam, resolved: true };
-  }
-  return { t1: match.t1, t2: match.t2, resolved: false };
+  const fr = feedResolve(match);
+  if (fr) return { t1: fr.t1, t2: fr.t2, resolved: true };
+  const t1 = resolveSide(match.t1);
+  const t2 = resolveSide(match.t2);
+  return { t1: t1 || match.t1, t2: t2 || match.t2, resolved: !!(t1 && t2) };
 }
 
 function scoreHTML(match) {
@@ -1544,7 +1610,10 @@ function scoreHTML(match) {
   }
   let badge = '';
   if (s.status === 'FT') {
-    badge = `<span class="status-badge status-FT">FT</span>`;
+    // A completed knockout tie that's level after the score went to penalties.
+    const ko = match.stage && match.stage.length > 1;
+    const drawn = hasScore && String(left) === String(right);
+    badge = `<span class="status-badge status-FT">${ko && drawn ? 'FT · pens' : 'FT'}</span>`;
   } else if (s.status === 'LIVE') {
     badge = `<span class="status-badge status-LIVE"><span class="live-dot"></span>LIVE</span>`;
   }
@@ -1578,6 +1647,15 @@ const MATCHES = RAW.map(r => ({
   num: r[0], date: r[1], timeET: r[2], stage: r[3],
   t1: r[4], t2: r[5], venue: r[6], city: r[7], country: r[8]
 })).sort((a,b)=> a.num - b.num);
+
+// Bracket lookups for knockout resolution.
+const matchByNum = {};
+MATCHES.forEach(m => { matchByNum[m.num] = m; });
+// Reverse of FEEDS: which match number each knockout match feeds its winner into.
+const FEEDS_INTO = {};
+for (const [N, sides] of Object.entries(FEEDS)) {
+  for (const s of sides) if (s.k === 'm') for (const r of s.r) FEEDS_INTO[r] = Number(N);
+}
 
 // Distinct teams (group-stage only — knockout uses placeholders)
 const TEAMS = Array.from(new Set(
@@ -1752,7 +1830,9 @@ function render() {
       const flag = `<span class="country-flag ${COUNTRY_CLASS[m.country]||""}">${COUNTRY_LABEL[m.country]||m.country}</span>`;
       // Override placeholder knockout teams with real ones once published.
       const rt = resolveTeams(m);
-      const displayMatch = rt.resolved ? { ...m, t1: rt.t1, t2: rt.t2 } : m;
+      // Always show resolved sides individually, so a known winner appears even
+      // while its opponent's feeder match is still pending (e.g. "Canada vs Winner M75").
+      const displayMatch = { ...m, t1: rt.t1, t2: rt.t2 };
       const sc = scoreHTML(displayMatch);
       const oddsBlock = oddsHTML(displayMatch); // self-gates by stage + status
       const tvCh = tvChannelFor(displayMatch);
