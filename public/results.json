@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-27T07:50:45.748Z",
+  "lastUpdated": "2026-06-28T00:04:33.668Z",
   "completed": {
     "2026-06-12|bosnia and herzegovina|canada": {
       "homeTeam": "Canada",
@@ -528,6 +528,22 @@
       "awayScore": "5",
       "commenceTime": "2026-06-27T03:01:00Z",
       "recordedAt": "2026-06-27T07:50:45.748Z"
+    },
+    "2026-06-27|croatia|ghana": {
+      "homeTeam": "Croatia",
+      "awayTeam": "Ghana",
+      "homeScore": "2",
+      "awayScore": "1",
+      "commenceTime": "2026-06-27T21:00:00Z",
+      "recordedAt": "2026-06-28T00:04:33.668Z"
+    },
+    "2026-06-27|england|panama": {
+      "homeTeam": "Panama",
+      "awayTeam": "England",
+      "homeScore": "0",
+      "awayScore": "2",
+      "commenceTime": "2026-06-27T21:00:00Z",
+      "recordedAt": "2026-06-28T00:04:33.668Z"
     }
   }
 }
