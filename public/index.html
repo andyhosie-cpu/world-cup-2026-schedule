@@ -1156,7 +1156,6 @@ const FEEDS = {
   104: [{k:"m", r:[101]}, {k:"m", r:[102]}]
 };
 
-const _matchPossibleCache = {};
 function teamsForSide(feed) {
   if (feed.k === "g") {
     const out = new Set();
@@ -1172,17 +1171,30 @@ function teamsForSide(feed) {
   return out;
 }
 function teamsForMatch(num) {
-  if (_matchPossibleCache[num]) return _matchPossibleCache[num];
+  // Once a knockout match's teams are known (resolved from the feed/results),
+  // those two ARE the only possibilities — this narrows the possible-teams of
+  // later rounds to the actual qualifiers as each round resolves. (No caching:
+  // resolution changes as results come in.)
+  const mm = MATCHES.find(x => x.num === num);
+  if (mm) {
+    const rt = resolveTeams(mm);
+    if (rt.resolved) return new Set([rt.t1, rt.t2]);
+  }
   const sides = FEEDS[num];
   if (!sides) return new Set();
   const both = new Set();
   sides.forEach(s => teamsForSide(s).forEach(t => both.add(t)));
-  _matchPossibleCache[num] = both;
   return both;
 }
 function possibleTeamsFor(matchNum) {
   const feed = FEEDS[matchNum];
   if (!feed) return null;
+  // If this match's own teams are already resolved, those are the only options.
+  const mm = MATCHES.find(x => x.num === matchNum);
+  if (mm) {
+    const rt = resolveTeams(mm);
+    if (rt.resolved) return { side1: [rt.t1], side2: [rt.t2], side1Groups: [], side2Groups: [] };
+  }
   // Side 1 and side 2 individually
   const s1 = [...teamsForSide(feed[0])].sort();
   const s2 = [...teamsForSide(feed[1])].sort();
