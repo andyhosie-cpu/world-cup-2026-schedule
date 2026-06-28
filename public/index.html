@@ -1506,7 +1506,7 @@ function expectedCommenceUTC(match) {
 }
 function resolveTeams(match) {
   if (match.stage.length === 1) return { t1: match.t1, t2: match.t2, resolved: true };
-  const live = ODDS_BY_COMMENCE[expectedCommenceUTC(match)];
+  const live = ODDS_BY_COMMENCE[new Date(expectedCommenceUTC(match)).getTime()];
   if (live && live.homeTeam && live.awayTeam) {
     return { t1: live.homeTeam, t2: live.awayTeam, resolved: true };
   }
@@ -1950,8 +1950,16 @@ async function fetchPersistedResults() {
 // (ODDS_BY_COMMENCE is declared at the top with the other live-data globals.)
 function rebuildOddsByCommence() {
   ODDS_BY_COMMENCE = {};
-  for (const m of Object.values(LIVE.odds.matches || {})) {
-    if (m.commenceTime) ODDS_BY_COMMENCE[m.commenceTime] = m;
+  // Index knockout fixtures by kickoff epoch (ms) so resolveTeams matches
+  // regardless of ISO formatting (e.g. trailing .000Z). Index BOTH the odds
+  // feed (upcoming fixtures) and the scores feed/ledger (so a match that has
+  // finished and dropped out of odds still resolves and cascades).
+  for (const src of [LIVE.scores.matches, LIVE.odds.matches]) {
+    for (const m of Object.values(src || {})) {
+      if (m.commenceTime && m.homeTeam && m.awayTeam) {
+        ODDS_BY_COMMENCE[new Date(m.commenceTime).getTime()] = m;
+      }
+    }
   }
 }
 // (expectedCommenceUTC, resolveTeams and ET_OFFSET_MS_LIVE are hoisted
@@ -2108,6 +2116,7 @@ async function fetchScores() {
   for (const [k, v] of Object.entries(PERSISTED_RESULTS)) {
     if (!LIVE.scores.matches[k]) LIVE.scores.matches[k] = v;
   }
+  rebuildOddsByCommence();
   recomputeEliminated();
   updateStatusStrip();
   render();
