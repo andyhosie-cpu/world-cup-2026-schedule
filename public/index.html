@@ -1547,8 +1547,11 @@ function koOutcome(num) {
   if (hs !== as) {
     return { winner: canonTeam(hs > as ? s.homeTeam : s.awayTeam), loser: canonTeam(hs > as ? s.awayTeam : s.homeTeam), pens: false };
   }
-  // Completed draw => penalties. Infer the advancing team from the next round.
-  const adv = inferAdvancer(num, rt.t1, rt.t2);
+  // Completed draw => penalties. Prefer the feed's next-round fixture (it
+  // encodes the actual qualifier); fall back to a manual PENALTY_WINNERS entry
+  // for ties the feed can't reflect yet.
+  let adv = inferAdvancer(num, rt.t1, rt.t2);
+  if (!adv && PENALTY_WINNERS[num]) adv = canonTeam(PENALTY_WINNERS[num]);
   if (!adv) return { winner: null, loser: null, pens: true };
   return { winner: adv, loser: normaliseTeam(adv) === normaliseTeam(rt.t1) ? rt.t2 : rt.t1, pens: true };
 }
@@ -1656,6 +1659,15 @@ const FEEDS_INTO = {};
 for (const [N, sides] of Object.entries(FEEDS)) {
   for (const s of sides) if (s.k === 'm') for (const r of s.r) FEEDS_INTO[r] = Number(N);
 }
+// Manual penalty-shootout winners. The scores API only reports the 120-min
+// score (a draw for any tie decided on penalties), and a tie can only be
+// auto-resolved once the feed publishes the next-round fixture — which can't
+// happen until the other half of that fixture is also decided. For ties stuck
+// in that gap, add the winner here: matchNum -> winning team. (The feed always
+// takes precedence when it does list the next round.)
+const PENALTY_WINNERS = {
+  74: 'Paraguay',   // Germany 1-1 Paraguay — Paraguay won on penalties
+};
 // Map feed team-name variants (e.g. "Bosnia & Herzegovina") back to the app's
 // canonical GROUPS spelling ("Bosnia and Herzegovina"), so group / eliminated /
 // name lookups match and nothing renders as "undefined".
