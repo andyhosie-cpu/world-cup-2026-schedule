@@ -1524,7 +1524,7 @@ function expectedCommenceUTC(match) {
 function feedResolve(match) {
   if (match.stage.length === 1) return { t1: match.t1, t2: match.t2 };
   const live = ODDS_BY_COMMENCE[new Date(expectedCommenceUTC(match)).getTime()];
-  if (live && live.homeTeam && live.awayTeam) return { t1: live.homeTeam, t2: live.awayTeam };
+  if (live && live.homeTeam && live.awayTeam) return { t1: canonTeam(live.homeTeam), t2: canonTeam(live.awayTeam) };
   return null;
 }
 
@@ -1545,7 +1545,7 @@ function koOutcome(num) {
   if (!s || !s.completed || s.homeScore == null || s.awayScore == null) return null;
   const hs = +s.homeScore, as = +s.awayScore;
   if (hs !== as) {
-    return { winner: hs > as ? s.homeTeam : s.awayTeam, loser: hs > as ? s.awayTeam : s.homeTeam, pens: false };
+    return { winner: canonTeam(hs > as ? s.homeTeam : s.awayTeam), loser: canonTeam(hs > as ? s.awayTeam : s.homeTeam), pens: false };
   }
   // Completed draw => penalties. Infer the advancing team from the next round.
   const adv = inferAdvancer(num, rt.t1, rt.t2);
@@ -1656,6 +1656,12 @@ const FEEDS_INTO = {};
 for (const [N, sides] of Object.entries(FEEDS)) {
   for (const s of sides) if (s.k === 'm') for (const r of s.r) FEEDS_INTO[r] = Number(N);
 }
+// Map feed team-name variants (e.g. "Bosnia & Herzegovina") back to the app's
+// canonical GROUPS spelling ("Bosnia and Herzegovina"), so group / eliminated /
+// name lookups match and nothing renders as "undefined".
+const CANON_BY_NORM = {};
+for (const teams of Object.values(GROUPS)) for (const t of teams) CANON_BY_NORM[normaliseTeam(t)] = t;
+function canonTeam(name) { return name == null ? name : (CANON_BY_NORM[normaliseTeam(name)] || name); }
 
 // Distinct teams (group-stage only — knockout uses placeholders)
 const TEAMS = Array.from(new Set(
